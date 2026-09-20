@@ -63,7 +63,7 @@ export const Header = ({ activeTab, setActiveTab }) => {
 
           {/* Twitter / X circular button */}
           <a
-            href="https://x.com/outlawgridrh"
+            href="https://x.com/tood_game"
             target="_blank"
             rel="noreferrer"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-[#e5e7eb] text-[#0d0e11] hover:bg-gray-50 transition-colors"
