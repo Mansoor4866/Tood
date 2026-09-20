@@ -207,21 +207,62 @@ body {
   animation: pulseWinner 1.5s infinite alternate;
 }
 
-@keyframes pulseWinner {
-  0% {
-    box-shadow: 0 0 18px rgba(242, 67, 172, 0.35);
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
   }
-  100% {
-    box-shadow: 0 0 36px rgba(242, 67, 172, 0.65);
+  50% {
+    transform: translateY(-8px) rotate(1deg);
   }
 }
 
-.facto-grid-active-shuffle {
-  background: #fdf2f9;
-  border: 2px solid var(--v2-pink);
-  border-radius: 18px;
-  box-shadow: 0 0 24px rgba(242, 67, 172, 0.5);
-  transform: scale(1.02);
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(-1deg);
+  }
+}
+
+@keyframes auraBreathe {
+  0%, 100% {
+    transform: scale(1) translate(-50%, -50%);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.15) translate(-50%, -50%);
+    opacity: 0.7;
+  }
+}
+
+@keyframes shimmerText {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 7s ease-in-out infinite;
+}
+
+.animate-aura {
+  animation: auraBreathe 8s ease-in-out infinite;
+}
+
+.animate-shimmer-text {
+  background-size: 200% auto;
+  animation: shimmerText 4s linear infinite;
 }
 
 /* Crosshair background in Facto style */
