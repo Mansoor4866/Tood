@@ -9,18 +9,19 @@
   --font-mono: "DM Mono", monospace;
 
   /* Facto UI Tokens */
-  --v2-surface: #f4f4f4;
+  --v2-surface: #f6f6f8;
   --v2-card: #ffffff;
   --v2-dark: #0d0e11;
   --v2-pink: #f243ac;
   --v2-pink-hover: #e0329a;
   --v2-emerald: #008638;
+  --v2-emerald-light: #059669;
   --v2-blue: #0053ff;
-  --v2-border: #e9e9e9;
-  --v2-border-subtle: #f0f0f0;
-  --v2-muted: rgba(13, 14, 17, 0.55);
+  --v2-border: #e6e6eb;
+  --v2-border-subtle: #f0f0f3;
+  --v2-muted: rgba(13, 14, 17, 0.58);
   --v2-faint: rgba(13, 14, 17, 0.35);
-  --v2-motion-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --v2-motion-enter-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after {
@@ -34,7 +35,9 @@ html, body, #root {
 }
 
 body {
-  background: var(--v2-surface);
+  background-color: var(--v2-surface);
+  background-image: radial-gradient(rgba(13, 14, 17, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--v2-dark);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -42,6 +45,22 @@ body {
   line-height: 1.5;
   overflow-x: hidden;
   position: relative;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(13, 14, 17, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(13, 14, 17, 0.28);
 }
 
 ::selection {
@@ -52,9 +71,9 @@ body {
 /* Typography styles */
 .display {
   font-family: var(--font-display);
-  letter-spacing: -0.03em;
-  font-weight: 500;
-  line-height: 1.1;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.08;
 }
 
 .mono {
@@ -69,108 +88,140 @@ body {
   text-transform: uppercase;
   color: var(--v2-muted);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Facto Button System */
 .btn-connect {
   background: var(--v2-dark);
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 9999px;
-  padding: 10px 24px;
-  font-size: 14px;
-  border: 1px solid var(--v2-dark);
+  padding: 9px 20px;
+  font-size: 13.5px;
+  border: 1px solid rgba(13, 14, 17, 0.8);
   transition: all 0.2s var(--v2-motion-enter-ease);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  box-shadow: 0 1px 3px rgba(13, 14, 17, 0.1);
 }
 .btn-connect:hover {
-  background: #252830;
+  background: #1f2229;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 14, 17, 0.18);
 }
 
 .btn-pink {
-  background: var(--v2-pink);
+  position: relative;
+  background: linear-gradient(135deg, #f755b7 0%, #f243ac 50%, #e0329a 100%);
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 9999px;
-  padding: 12px 24px;
+  padding: 13px 26px;
   font-size: 15px;
   border: none;
-  transition: all 0.2s var(--v2-motion-enter-ease);
+  transition: all 0.22s var(--v2-motion-enter-ease);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px rgba(242, 67, 172, 0.3);
+  box-shadow: 0 4px 16px rgba(242, 67, 172, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  overflow: hidden;
+}
+.btn-pink::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  transform: skewX(-20deg);
+  transition: all 0.6s ease;
+}
+.btn-pink:hover:not(:disabled)::after {
+  left: 140%;
 }
 .btn-pink:hover:not(:disabled) {
-  background: var(--v2-pink-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(242, 67, 172, 0.45);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 24px rgba(242, 67, 172, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.btn-pink:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(242, 67, 172, 0.35);
 }
 
 /* Facto Card Styles */
 .facto-card {
   background: #ffffff;
   border: 1px solid var(--v2-border);
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(13, 14, 17, 0.03);
-  transition: transform 0.2s var(--v2-motion-enter-ease), box-shadow 0.2s ease, border-color 0.2s ease;
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(13, 14, 17, 0.02), 0 8px 24px -4px rgba(13, 14, 17, 0.04);
+  transition: transform 0.22s var(--v2-motion-enter-ease), box-shadow 0.22s ease, border-color 0.22s ease;
   position: relative;
 }
 .facto-card:hover {
-  border-color: #d8d8d8;
-  box-shadow: 0 8px 24px rgba(13, 14, 17, 0.05);
+  border-color: #dcdce2;
+  box-shadow: 0 2px 4px rgba(13, 14, 17, 0.02), 0 16px 36px -6px rgba(13, 14, 17, 0.07);
 }
 
 /* Floating Glass Navbar */
 .facto-nav {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(244, 244, 244, 0.92);
-  border: 1px solid rgba(13, 14, 17, 0.06);
-  box-shadow: 0 2px 14px rgba(13, 14, 17, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(13, 14, 17, 0.07);
+  box-shadow: 0 4px 20px -2px rgba(13, 14, 17, 0.04);
 }
 
 /* Grid Cell Styles in Facto Theme */
 .facto-grid-normal {
   background: #ffffff;
-  border: 1px solid #e9e9e9;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(13, 14, 17, 0.03);
+  border: 1px solid #e7e7eb;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(13, 14, 17, 0.02);
   transition: all 0.2s var(--v2-motion-enter-ease);
 }
 .facto-grid-normal:hover {
-  border-color: #d5d5d5;
-  box-shadow: 0 6px 18px rgba(13, 14, 17, 0.06);
-  transform: translateY(-2px);
+  border-color: #d1d1d8;
+  box-shadow: 0 8px 22px rgba(13, 14, 17, 0.06);
+  transform: translateY(-2.5px);
 }
 
 .facto-grid-selected {
-  background: #fff;
+  background: #ffffff;
   border: 2px solid var(--v2-pink);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(242, 67, 172, 0.2);
-  transform: translateY(-2px);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(242, 67, 172, 0.25), inset 0 0 0 1px rgba(242, 67, 172, 0.2);
+  transform: translateY(-2.5px);
 }
 
 .facto-grid-drawn {
-  background: #fff9fd;
+  background: #fff6fb;
   border: 2px solid var(--v2-pink);
-  border-radius: 16px;
-  box-shadow: 0 0 25px rgba(242, 67, 172, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(242, 67, 172, 0.45);
+  animation: pulseWinner 1.5s infinite alternate;
+}
+
+@keyframes pulseWinner {
+  0% {
+    box-shadow: 0 0 18px rgba(242, 67, 172, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 36px rgba(242, 67, 172, 0.65);
+  }
 }
 
 .facto-grid-active-shuffle {
   background: #fdf2f9;
   border: 2px solid var(--v2-pink);
-  border-radius: 16px;
-  box-shadow: 0 0 20px rgba(242, 67, 172, 0.4);
+  border-radius: 18px;
+  box-shadow: 0 0 24px rgba(242, 67, 172, 0.5);
+  transform: scale(1.02);
 }
 
 /* Crosshair background in Facto style */
@@ -182,10 +233,10 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 90px;
-  height: 90px;
+  width: 84px;
+  height: 84px;
   transform: translate(-50%, -50%);
-  border: 1px dashed rgba(13, 14, 17, 0.1);
+  border: 1px dashed rgba(13, 14, 17, 0.09);
   border-radius: 50%;
   pointer-events: none;
 }
