@@ -16,9 +16,12 @@ export const DrawModal = () => {
         {/* Top Accent Strip */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#f755b7] to-[#f243ac]" />
 
-        {/* Trophy Badge */}
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#fff5fa] border border-[#f243ac]/30 text-[#f243ac] mb-4 shadow-sm">
-          <Trophy size={32} />
+        {/* TOOD Mascot Winner Celebration Badge */}
+        <div className="mx-auto relative h-20 w-20 rounded-2xl overflow-hidden ring-4 ring-[#f243ac]/20 shadow-xl mb-4 group">
+          <img src="/assets/TOOD PFP.png" alt="TOOD Mascot" className="w-full h-full object-cover" />
+          <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#f243ac] text-white flex items-center justify-center shadow-md border-2 border-white">
+            <Trophy size={13} />
+          </div>
         </div>
 
         <div className="text-[11px] font-bold uppercase tracking-wider text-[#f243ac] font-mono">

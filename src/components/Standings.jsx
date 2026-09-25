@@ -11,15 +11,20 @@ export const Standings = () => {
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-8">
-        <div>
-          <h2 className="display text-[32px] sm:text-[40px] font-bold text-[#0d0e11] tracking-tight">
-            Leaderboard
-          </h2>
-          <p className="text-[16px] text-[#0d0e1180] mt-1">
-            Rebuilt in real-time from settled rounds on Robinhood Chain
-          </p>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-black border border-black/20 shadow-sm p-1 flex items-center justify-center shrink-0">
+            <img src="/assets/TOOD LOGO-03.jpg" alt="TOOD Eyes" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <h2 className="display text-[32px] sm:text-[40px] font-bold text-[#0d0e11] tracking-tight">
+              Leaderboard
+            </h2>
+            <p className="text-[16px] text-[#0d0e1180] mt-0.5">
+              Rebuilt in real-time from settled rounds on Robinhood Chain
+            </p>
+          </div>
         </div>
-        <span className="mono text-[12px] text-[#0d0e1180] bg-white px-3.5 py-1.5 rounded-full border border-[#e6e6eb] font-semibold shadow-sm">
+        <span className="mono text-[12px] text-[#0d0e1180] bg-white px-3.5 py-1.5 rounded-full border border-[#e6e6eb] font-semibold shadow-sm self-start md:self-auto">
           Season 1 Standings
         </span>
       </div>

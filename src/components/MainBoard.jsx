@@ -231,9 +231,14 @@ export const MainBoard = () => {
           {/* Card 1: Stake a claim */}
           <div className="facto-card p-6 sm:p-7">
             <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f3]">
-              <h3 className="display text-[21px] font-bold text-[#0d0e11] tracking-tight">
-                Stake a claim
-              </h3>
+              <div className="flex items-center gap-3">
+                <div className="h-7 w-auto px-2 py-0.5 rounded-lg bg-white border border-[#e6e6eb] shadow-sm flex items-center">
+                  <img src="/assets/TOOD LOGO-01.jpg" alt="TOOD Official" className="h-4.5 w-auto object-contain" />
+                </div>
+                <h3 className="display text-[21px] font-bold text-[#0d0e11] tracking-tight">
+                  Stake a claim
+                </h3>
+              </div>
               <span className="mono text-[12px] font-semibold px-2.5 py-0.5 rounded-full bg-[#f4f4f6] text-[#0d0e1180] border border-[#e6e6eb]">
                 Round #{roundNumber}
               </span>
@@ -396,7 +401,10 @@ export const MainBoard = () => {
           <div className="facto-card p-6 flex flex-col h-[360px]">
             {/* Saloon Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#f0f0f3]">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="h-7 w-7 rounded-lg overflow-hidden bg-black flex items-center justify-center p-0.5 shadow-sm border border-black/20">
+                  <img src="/assets/TOOD LOGO-03.jpg" alt="Saloon Logo" className="w-full h-full object-contain" />
+                </div>
                 <h3 className="display text-[19px] font-bold text-[#0d0e11]">
                   The saloon
                 </h3>

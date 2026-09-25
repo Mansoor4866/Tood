@@ -125,8 +125,11 @@ export const Hero = () => {
       {/* Relative container for content */}
       <div className="relative z-10">
         
-        {/* Eyebrow badge with animated glow */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#e6e6eb] shadow-sm mb-6 text-[12px] font-mono text-[#0d0e11] hover:border-[#f243ac]/40 transition-colors">
+        {/* Eyebrow badge with animated glow & 3D Mascot Avatar */}
+        <div className="inline-flex items-center gap-2.5 pl-2 pr-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#e6e6eb] shadow-sm mb-6 text-[12px] font-mono text-[#0d0e11] hover:border-[#f243ac]/40 transition-all hover:shadow-md group">
+          <div className="relative w-6 h-6 rounded-full overflow-hidden ring-2 ring-[#f243ac]/30 shadow-inner group-hover:scale-110 transition-transform">
+            <img src="/assets/TOOD PFP.png" alt="TOOD Mascot" className="w-full h-full object-cover" />
+          </div>
           <span className="h-2 w-2 rounded-full bg-[#008638] animate-pulse" />
           <span className="font-bold text-[#0d0e11]">Robinhood Chain EVM</span>
           <span className="text-[#0d0e114d]">·</span>

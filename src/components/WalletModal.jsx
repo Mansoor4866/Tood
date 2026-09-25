@@ -40,8 +40,12 @@ export const WalletModal = () => {
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f0]">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-[#0d0e11] flex items-center justify-center text-white">
-              <Wallet size={18} className="text-[#f243ac]" />
+            <div className="h-9 w-9 rounded-xl bg-[#0d0e11] flex items-center justify-center p-1.5 shadow-sm border border-black/10">
+              <img
+                src="/assets/TOOD LOGO-02.png"
+                alt="TOOD"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(242,67,172,0.4)]"
+              />
             </div>
             <div>
               <h3 className="display text-[20px] font-bold text-[#0d0e11]">

@@ -18,9 +18,14 @@ export const HowAClaimPays = () => {
             One pot, sixteen plots, and a draw that picks one
           </p>
         </div>
-        <span className="mono text-[12px] font-semibold px-3 py-1 rounded-full bg-white border border-[#e6e6eb] text-[#0d0e1180] self-start md:self-auto shadow-sm">
-          Protocol Rules
-        </span>
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="h-7 w-auto px-2 py-0.5 rounded-lg bg-white border border-[#e6e6eb] shadow-sm flex items-center">
+            <img src="/assets/TOOD LOGO-01.jpg" alt="TOOD" className="h-4 w-auto object-contain" />
+          </div>
+          <span className="mono text-[12px] font-semibold px-3 py-1 rounded-full bg-white border border-[#e6e6eb] text-[#0d0e1180] shadow-sm">
+            Protocol Rules
+          </span>
+        </div>
       </div>
 
       {/* 4 Cards Grid in Facto Style */}

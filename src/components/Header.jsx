@@ -18,8 +18,12 @@ export const Header = ({ activeTab, setActiveTab }) => {
             className="flex items-center gap-2.5 bg-transparent border-0 cursor-pointer p-0 text-left"
           >
             {/* Tood Brand Icon Mark */}
-            <div className="h-8 w-8 rounded-lg bg-[#0d0e11] flex items-center justify-center text-white shadow-sm font-bold">
-              <span className="text-[#f243ac]">T</span>
+            <div className="h-9 w-9 rounded-xl bg-[#0d0e11] flex items-center justify-center p-1.5 shadow-sm border border-black/10 hover:scale-105 transition-all">
+              <img
+                src="/assets/TOOD LOGO-02.png"
+                alt="Tood Logo"
+                className="w-full h-full object-contain filter drop-shadow-[0_0_6px_rgba(242,67,172,0.45)]"
+              />
             </div>
             <span className="display text-[21px] font-bold text-[#0d0e11] tracking-tight">
               Tood

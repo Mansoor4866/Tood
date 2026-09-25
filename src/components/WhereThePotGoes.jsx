@@ -9,13 +9,18 @@ export const WhereThePotGoesAndHouseRules = () => {
       {/* ================= SECTION 1: WHERE THE POT GOES ================= */}
       <section>
         <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-8">
-          <div>
-            <h2 className="display text-[32px] sm:text-[40px] font-bold text-[#0d0e11] tracking-tight">
-              Where the pot goes
-            </h2>
-            <p className="text-[15px] sm:text-[17px] text-[#0d0e1180] mt-1">
-              Ninety percent leaves with the winners, on chain, every round
-            </p>
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-white border border-[#e6e6eb] shadow-sm p-1.5 flex items-center justify-center shrink-0">
+              <img src="/assets/TOOD LOGO-04.jpg" alt="TOOD Crest" className="w-full h-full object-contain" />
+            </div>
+            <div>
+              <h2 className="display text-[32px] sm:text-[40px] font-bold text-[#0d0e11] tracking-tight">
+                Where the pot goes
+              </h2>
+              <p className="text-[15px] sm:text-[17px] text-[#0d0e1180] mt-0.5">
+                Ninety percent leaves with the winners, on chain, every round
+              </p>
+            </div>
           </div>
           <span className="mono text-[12px] font-semibold px-3 py-1 rounded-full bg-white border border-[#e6e6eb] text-[#0d0e1180] self-start md:self-auto shadow-sm">
             100% On-Chain Verifiable

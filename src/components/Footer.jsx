@@ -8,11 +8,14 @@ export const Footer = () => {
         
         {/* Top row */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-[#f0f0f0]">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-[#0d0e11] flex items-center justify-center text-white font-bold">
-              <span className="text-[#f243ac]">T</span>
+          <div className="flex items-center gap-3">
+            <div className="h-10 px-3 rounded-xl bg-black border border-white/10 flex items-center shadow-sm">
+              <img src="/assets/TOOD LOGO-05.jpg" alt="TOOD Brand" className="h-6 w-auto object-contain" />
             </div>
-            <span className="display text-[20px] font-bold text-[#0d0e11]">Tood</span>
+            <div className="flex flex-col">
+              <span className="display text-[18px] font-bold text-[#0d0e11] leading-tight">Tood</span>
+              <span className="text-[11px] mono text-[#0d0e1180]">Robinhood Chain EVM</span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-6 mono text-[13px] text-[#0d0e1180] font-medium">
