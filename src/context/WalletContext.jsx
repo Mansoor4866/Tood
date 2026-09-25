@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { syncUserProfile } from '../lib/supabase';
+import { syncUserProfile, fetchUserProfile } from '../lib/supabase';
 
 const WalletContext = createContext();
 
@@ -80,10 +80,38 @@ export const WalletProvider = ({ children }) => {
   const [isWrongNetwork, setIsWrongNetwork] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [connectionError, setConnectionError] = useState('');
+  const [userProfile, setUserProfile] = useState(null);
   
   // EIP-6963 Discovered Injected Providers
   const [discoveredProviders, setDiscoveredProviders] = useState([]);
   const [activeProvider, setActiveProvider] = useState(null);
+
+  // Load persistent user data (USDG balance & profile stats)
+  const loadUserData = async (address, defaultUsdg = 2500) => {
+    if (!address) return;
+    const key = address.toLowerCase();
+
+    // 1. Persistent USDG balance in localStorage per wallet
+    const savedUsdg = localStorage.getItem(`tood_usdg_${key}`);
+    if (savedUsdg !== null) {
+      setUsdgBalance(Number(savedUsdg));
+    } else {
+      setUsdgBalance(defaultUsdg);
+      try {
+        localStorage.setItem(`tood_usdg_${key}`, defaultUsdg.toString());
+      } catch (e) {}
+    }
+
+    // 2. Fetch full player stats from Supabase
+    try {
+      const prof = await fetchUserProfile(address);
+      if (prof) {
+        setUserProfile(prof);
+      }
+    } catch (e) {
+      console.warn('Failed to load profile:', e);
+    }
+  };
 
   // EIP-6963 Multi-Injected Provider Discovery Listener
   useEffect(() => {
@@ -184,8 +212,12 @@ export const WalletProvider = ({ children }) => {
         setAccount(shortAddr);
         setIsConnected(true);
 
+        try {
+          localStorage.setItem('tood_last_connected_wallet', fullAddr);
+        } catch (e) {}
+
         // Sync user profile to Supabase database
-        syncUserProfile(fullAddr);
+        await syncUserProfile(fullAddr);
 
         // Check Network
         try {
@@ -203,8 +235,8 @@ export const WalletProvider = ({ children }) => {
         // Fetch balance
         await fetchBalance(fullAddr, provider);
 
-        // Default test USDG if mainnet account
-        setUsdgBalance(prev => (prev > 0 ? prev : 2500));
+        // Load persistent profile & USDG balance
+        await loadUserData(fullAddr, 2500);
         setShowWalletModal(false);
       }
     } catch (err) {
@@ -220,16 +252,19 @@ export const WalletProvider = ({ children }) => {
   };
 
   // Demo Sandbox Wallet Connect (One-click instant trial)
-  const connectDemoMode = () => {
+  const connectDemoMode = async () => {
     const demoAddr = '0x71C83907c0E2134567890abcdef1234567890123';
     setFullAddress(demoAddr);
     setAccount('0x71C8...4E21');
     setIsConnected(true);
     setEthBalance(5.50);
-    setUsdgBalance(10000);
+    try {
+      localStorage.setItem('tood_last_connected_wallet', 'demo');
+    } catch (e) {}
     setShowWalletModal(false);
     setConnectionError('');
-    syncUserProfile(demoAddr);
+    await syncUserProfile(demoAddr);
+    await loadUserData(demoAddr, 10000);
   };
 
   const disconnectWallet = () => {
@@ -238,12 +273,24 @@ export const WalletProvider = ({ children }) => {
     setFullAddress(null);
     setEthBalance(0);
     setUsdgBalance(0);
+    setUserProfile(null);
     setActiveProvider(null);
+    try {
+      localStorage.removeItem('tood_last_connected_wallet');
+    } catch (e) {}
   };
 
   const claimFaucet = () => {
     setEthBalance((prev) => +(prev + 2.0).toFixed(4));
-    setUsdgBalance((prev) => prev + 5000);
+    setUsdgBalance((prev) => {
+      const next = prev + 5000;
+      if (fullAddress) {
+        try {
+          localStorage.setItem(`tood_usdg_${fullAddress.toLowerCase()}`, next.toString());
+        } catch (e) {}
+      }
+      return next;
+    });
   };
 
   const deductBalance = (amount, tokenType) => {
@@ -253,7 +300,15 @@ export const WalletProvider = ({ children }) => {
       return true;
     } else {
       if (usdgBalance < amount) return false;
-      setUsdgBalance((prev) => +(prev - amount).toFixed(2));
+      setUsdgBalance((prev) => {
+        const next = +(prev - amount).toFixed(2);
+        if (fullAddress) {
+          try {
+            localStorage.setItem(`tood_usdg_${fullAddress.toLowerCase()}`, next.toString());
+          } catch (e) {}
+        }
+        return next;
+      });
       return true;
     }
   };
@@ -262,9 +317,36 @@ export const WalletProvider = ({ children }) => {
     if (tokenType === 'ETH') {
       setEthBalance((prev) => +(prev + amount).toFixed(4));
     } else {
-      setUsdgBalance((prev) => +(prev + amount).toFixed(2));
+      setUsdgBalance((prev) => {
+        const next = +(prev + amount).toFixed(2);
+        if (fullAddress) {
+          try {
+            localStorage.setItem(`tood_usdg_${fullAddress.toLowerCase()}`, next.toString());
+          } catch (e) {}
+        }
+        return next;
+      });
     }
   };
+
+  // Auto restore wallet connection from previous session if available
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('tood_last_connected_wallet');
+      if (saved === 'demo') {
+        connectDemoMode();
+      } else if (saved && (window.ethereum || activeProvider)) {
+        const p = activeProvider || window.ethereum;
+        p?.request?.({ method: 'eth_accounts' })
+          .then((accs) => {
+            if (accs && accs.length > 0 && accs[0].toLowerCase() === saved.toLowerCase()) {
+              connectWallet(p);
+            }
+          })
+          .catch(() => {});
+      }
+    } catch (e) {}
+  }, []);
 
   // Listen to provider events (accountsChanged, chainChanged)
   useEffect(() => {
@@ -310,6 +392,7 @@ export const WalletProvider = ({ children }) => {
         isConnecting,
         ethBalance,
         usdgBalance,
+        userProfile,
         isWrongNetwork,
         showWalletModal,
         connectionError,
@@ -322,6 +405,7 @@ export const WalletProvider = ({ children }) => {
         deductBalance,
         creditBalance,
         switchToRobinhoodChain,
+        loadUserData,
       }}
     >
       {children}

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { INITIAL_PLOTS, INITIAL_HISTORY, INITIAL_LEADERBOARD } from '../data/mockData';
 import { useSound } from './SoundContext';
 import { useWallet } from './WalletContext';
-import { recordStakeActivity, recordRoundSettlement, fetchRoundsLog } from '../lib/supabase';
+import { recordStakeActivity, recordRoundSettlement, fetchRoundsLog, updateUserGameStats, fetchLeaderboardFromProfiles } from '../lib/supabase';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
@@ -11,7 +11,7 @@ const ROUND_TIME = 60; // 60 seconds per round
 
 export const GameProvider = ({ children }) => {
   const { playTick, playShuffle, playWin } = useSound();
-  const { creditBalance } = useWallet();
+  const { creditBalance, fullAddress, account, loadUserData } = useWallet();
 
   const [roundNumber, setRoundNumber] = useState(143);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
@@ -80,9 +80,9 @@ export const GameProvider = ({ children }) => {
     return () => clearInterval(botInterval);
   }, [roundStatus]);
 
-  // Fetch historical rounds from Supabase on start
+  // Fetch historical rounds and live leaderboard from Supabase on start
   useEffect(() => {
-    async function loadRounds() {
+    async function loadInitialData() {
       try {
         const liveHistory = await fetchRoundsLog();
         if (liveHistory && liveHistory.length > 0) {
@@ -95,8 +95,17 @@ export const GameProvider = ({ children }) => {
       } catch (err) {
         console.warn('Initial rounds load note:', err);
       }
+
+      try {
+        const liveLb = await fetchLeaderboardFromProfiles();
+        if (liveLb && liveLb.length > 0) {
+          setLeaderboard(liveLb);
+        }
+      } catch (err) {
+        console.warn('Initial leaderboard load note:', err);
+      }
     }
-    loadRounds();
+    loadInitialData();
   }, []);
 
   // Stake user funds on a plot
@@ -126,11 +135,12 @@ export const GameProvider = ({ children }) => {
       };
     });
 
-    // Record activity in Supabase PostgreSQL
-    if (walletAddress && targetPlot) {
+    // Record activity in Supabase PostgreSQL & update user stats
+    const userAddr = walletAddress || fullAddress || account;
+    if (userAddr && targetPlot) {
       recordStakeActivity({
         roundNumber,
-        walletAddress,
+        walletAddress: userAddr,
         plotId,
         cell: targetPlot.cell,
         tokenSymbol: targetPlot.symbol,
@@ -187,6 +197,19 @@ export const GameProvider = ({ children }) => {
           if (userPayoutEth > 0) creditBalance(userPayoutEth, 'ETH');
           if (userPayoutUsdg > 0) creditBalance(userPayoutUsdg, 'USDG');
 
+          // Persist user win in Supabase profiles & localStorage
+          const winnerAddr = fullAddress || account;
+          if (winnerAddr) {
+            updateUserGameStats({
+              walletAddress: winnerAddr,
+              deltaWonEth: userPayoutEth,
+              deltaWonUsdg: userPayoutUsdg,
+              isWin: true
+            }).then(() => {
+              loadUserData?.(winnerAddr);
+            });
+          }
+
           // Trigger fireworks confetti!
           try {
             confetti({
@@ -222,6 +245,11 @@ export const GameProvider = ({ children }) => {
 
         // Save settlement in Supabase database
         recordRoundSettlement(settlement);
+
+        // Refresh live standings from Supabase
+        fetchLeaderboardFromProfiles().then(lb => {
+          if (lb && lb.length > 0) setLeaderboard(lb);
+        });
 
         // Auto restart round after 9 seconds of celebration
         setTimeout(() => {

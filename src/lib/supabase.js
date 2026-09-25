@@ -44,6 +44,135 @@ export async function syncUserProfile(walletAddress) {
 }
 
 /**
+ * Fetch full profile of a user (including stats, rounds played, won amounts)
+ */
+export async function fetchUserProfile(walletAddress) {
+  if (!walletAddress) return null;
+  const addr = walletAddress.toLowerCase();
+
+  // Local storage cache as instant fallback
+  let localData = null;
+  try {
+    const cached = localStorage.getItem(`tood_profile_${addr}`);
+    if (cached) localData = JSON.parse(cached);
+  } catch (e) {}
+
+  if (!isSupabaseConfigured || !supabase) {
+    return localData || {
+      wallet_address: addr,
+      total_staked_eth: 0,
+      total_won_eth: 0,
+      total_staked_usdg: 0,
+      total_won_usdg: 0,
+      rounds_played: 0,
+      rounds_won: 0
+    };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('wallet_address', addr)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Supabase fetch user error:', error.message);
+      return localData;
+    }
+
+    if (data) {
+      try {
+        localStorage.setItem(`tood_profile_${addr}`, JSON.stringify(data));
+      } catch (e) {}
+      return data;
+    }
+
+    return localData;
+  } catch (err) {
+    console.warn('Supabase fetch profile error:', err);
+    return localData;
+  }
+}
+
+/**
+ * Incrementally update user game stats in Supabase and localStorage
+ */
+export async function updateUserGameStats({
+  walletAddress,
+  deltaStakedEth = 0,
+  deltaStakedUsdg = 0,
+  deltaWonEth = 0,
+  deltaWonUsdg = 0,
+  isWin = false,
+  playedRound = false
+}) {
+  if (!walletAddress) return;
+  const addr = walletAddress.toLowerCase();
+
+  // 1. Instant local persistence
+  let updatedLocal = null;
+  try {
+    const key = `tood_profile_${addr}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{}');
+    updatedLocal = {
+      ...existing,
+      wallet_address: addr,
+      total_staked_eth: +((Number(existing.total_staked_eth) || 0) + deltaStakedEth).toFixed(4),
+      total_staked_usdg: +((Number(existing.total_staked_usdg) || 0) + deltaStakedUsdg).toFixed(2),
+      total_won_eth: +((Number(existing.total_won_eth) || 0) + deltaWonEth).toFixed(4),
+      total_won_usdg: +((Number(existing.total_won_usdg) || 0) + deltaWonUsdg).toFixed(2),
+      rounds_played: (Number(existing.rounds_played) || 0) + (playedRound ? 1 : 0),
+      rounds_won: (Number(existing.rounds_won) || 0) + (isWin ? 1 : 0),
+      last_active: new Date().toISOString()
+    };
+    localStorage.setItem(key, JSON.stringify(updatedLocal));
+  } catch (e) {}
+
+  if (!isSupabaseConfigured || !supabase) return updatedLocal;
+
+  // 2. Database update
+  try {
+    const { data: current } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('wallet_address', addr)
+      .maybeSingle();
+
+    const newStakedEth = +((Number(current?.total_staked_eth) || 0) + deltaStakedEth).toFixed(4);
+    const newStakedUsdg = +((Number(current?.total_staked_usdg) || 0) + deltaStakedUsdg).toFixed(2);
+    const newWonEth = +((Number(current?.total_won_eth) || 0) + deltaWonEth).toFixed(4);
+    const newWonUsdg = +((Number(current?.total_won_usdg) || 0) + deltaWonUsdg).toFixed(2);
+    const newRoundsPlayed = (Number(current?.rounds_played) || 0) + (playedRound ? 1 : 0);
+    const newRoundsWon = (Number(current?.rounds_won) || 0) + (isWin ? 1 : 0);
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({
+        wallet_address: addr,
+        total_staked_eth: newStakedEth,
+        total_staked_usdg: newStakedUsdg,
+        total_won_eth: newWonEth,
+        total_won_usdg: newWonUsdg,
+        rounds_played: newRoundsPlayed,
+        rounds_won: newRoundsWon,
+        last_active: new Date().toISOString()
+      }, { onConflict: 'wallet_address' })
+      .select()
+      .single();
+
+    if (error) {
+      console.warn('Supabase updateUserGameStats error:', error.message);
+      return updatedLocal;
+    }
+    return data;
+  } catch (err) {
+    console.warn('Error in updateUserGameStats:', err);
+    return updatedLocal;
+  }
+}
+
+/**
  * Fetch recent saloon messages
  */
 export async function fetchSaloonMessages() {
@@ -159,7 +288,17 @@ export function subscribeToSaloon(onNewMessage) {
  * Save user stake activity to Supabase
  */
 export async function recordStakeActivity({ roundNumber, walletAddress, plotId, cell, tokenSymbol, ethAmount, usdgAmount }) {
-  if (!isSupabaseConfigured || !supabase || !walletAddress) return;
+  if (!walletAddress) return;
+
+  // Track user stake in profile stats
+  updateUserGameStats({
+    walletAddress,
+    deltaStakedEth: ethAmount || 0,
+    deltaStakedUsdg: usdgAmount || 0,
+    playedRound: true
+  });
+
+  if (!isSupabaseConfigured || !supabase) return;
 
   try {
     // 1. Ensure user profile exists
@@ -258,5 +397,57 @@ export async function recordRoundSettlement(roundData) {
     if (error) console.warn('Supabase round settlement save error:', error.message);
   } catch (err) {
     console.warn('Supabase record round error:', err);
+  }
+}
+
+/**
+ * Fetch leaderboard directly from Supabase profiles
+ */
+export async function fetchLeaderboardFromProfiles() {
+  if (!isSupabaseConfigured || !supabase) {
+    return INITIAL_LEADERBOARD;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .or('total_won_eth.gt.0,total_won_usdg.gt.0,total_staked_eth.gt.0')
+      .order('total_won_eth', { ascending: false })
+      .limit(10);
+
+    if (error || !data || data.length === 0) {
+      return INITIAL_LEADERBOARD;
+    }
+
+    const liveList = data.map((p, idx) => {
+      const wonEth = Number(p.total_won_eth) || 0;
+      const wonUsdg = Number(p.total_won_usdg) || 0;
+      const stakedEth = Number(p.total_staked_eth) || 0;
+      const stakedUsdg = Number(p.total_staked_usdg) || 0;
+      const played = Number(p.rounds_played) || 0;
+      const won = Number(p.rounds_won) || 0;
+      const winRate = played > 0 ? `${Math.round((won / played) * 100)}%` : '0%';
+      const shortAddr = p.wallet_address.length > 10 
+        ? `${p.wallet_address.slice(0, 6)}...${p.wallet_address.slice(-4)}`
+        : p.wallet_address;
+
+      return {
+        rank: idx + 1,
+        address: shortAddr,
+        name: p.custom_name || shortAddr,
+        wonEth,
+        wonUsdg,
+        stakedEth,
+        stakedUsdg,
+        winRate,
+        roundsPlayed: played
+      };
+    });
+
+    return liveList.length > 0 ? liveList : INITIAL_LEADERBOARD;
+  } catch (err) {
+    console.warn('Leaderboard fetch note:', err);
+    return INITIAL_LEADERBOARD;
   }
 }
