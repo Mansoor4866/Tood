@@ -17,7 +17,7 @@ import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
 
-const ROUND_TIME = 60; // 60 seconds per round
+export const ROUND_TIME = 900; // 15 Minutes = 900 seconds per round
 
 export const GameProvider = ({ children }) => {
   const { playTick, playShuffle, playWin } = useSound();
@@ -329,6 +329,7 @@ export const GameProvider = ({ children }) => {
       value={{
         roundNumber,
         timeLeft,
+        roundTime: ROUND_TIME,
         roundStatus,
         plots,
         userStakes,

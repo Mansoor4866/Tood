@@ -3,9 +3,15 @@ import { useGame } from '../context/GameContext';
 import { Clock, Trophy, Flame, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 
 export const Hero = () => {
-  const { roundNumber, timeLeft, totalEthPot, totalUsdgPot, roundStatus } = useGame();
-  const progressPercent = Math.max(0, Math.min(100, (timeLeft / 60) * 100));
+  const { roundNumber, timeLeft, roundTime = 900, totalEthPot, totalUsdgPot, roundStatus } = useGame();
+  const progressPercent = Math.max(0, Math.min(100, (timeLeft / roundTime) * 100));
   const canvasRef = useRef(null);
+
+  const formatClock = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins < 10 ? `0${mins}` : mins}:${secs < 10 ? `0${secs}` : secs}`;
+  };
 
   // Subtle Interactive Floating Particles & Web3 Constellation Canvas
   useEffect(() => {
@@ -186,12 +192,14 @@ export const Hero = () => {
                 <span>ROUND CLOCK</span>
               </div>
               <div className={`mono text-[34px] sm:text-[40px] font-bold mt-0.5 tracking-wider ${
-                timeLeft <= 10 && roundStatus === 'betting' ? 'text-[#f243ac] animate-pulse' : 'text-[#0d0e11]'
+                timeLeft <= 30 && roundStatus === 'betting' ? 'text-[#f243ac] animate-pulse' : 'text-[#0d0e11]'
               }`}>
-                {roundStatus === 'betting' ? `00:${timeLeft < 10 ? `0${timeLeft}` : timeLeft}` : '--:--'}
+                {roundStatus === 'betting' ? formatClock(timeLeft) : '--:--'}
               </div>
               <div className="mono text-[12px] text-[#0d0e1180] mt-1">
-                {roundStatus === 'betting' ? `${timeLeft}s left to pick a plot` : 'Round in settlement'}
+                {roundStatus === 'betting'
+                  ? `${Math.floor(timeLeft / 60)}m ${timeLeft % 60}s left to pick a plot`
+                  : 'Round in settlement'}
               </div>
             </div>
 
