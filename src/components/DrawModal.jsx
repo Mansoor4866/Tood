@@ -141,6 +141,20 @@ export const DrawModal = () => {
                 )}
               </div>
             )}
+
+            {/* Share Win on X (Viral Marketing Flex) */}
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                `Just won +${winnerDetails.userPayoutEth > 0 ? `${winnerDetails.userPayoutEth} ETH` : `${winnerDetails.userPayoutUsdg} USDG`} on @ToodProtocol_ on Robinhood Chain! 🎯\n\nSeason 1 is LIVE, grinding for the $TOOD airdrop allocation! 🚀\n\nStake on the 16-plot grid: https://tood-tau.vercel.app`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              onClick={playClick}
+              className="mt-3 w-full py-2.5 px-4 rounded-xl bg-black hover:bg-neutral-800 text-white text-[12px] font-mono font-bold flex items-center justify-center gap-2 transition shadow-sm active:scale-95 cursor-pointer"
+            >
+              <span className="font-bold text-[14px]">𝕏</span>
+              <span>Flex Win on 𝕏 & Grind $TOOD Airdrop</span>
+            </a>
           </div>
         ) : (
           <div className="my-5 p-4 rounded-2xl bg-[#f8f8fa] border border-[#e6e6eb]">
