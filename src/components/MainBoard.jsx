@@ -79,8 +79,15 @@ export const MainBoard = () => {
     }
 
     const num = parseFloat(stakeAmount) || 0;
+    const minAmount = stakeToken === 'ETH' ? 0.0005 : 1;
+
     if (num <= 0) {
       setStakeError('Enter a valid stake amount');
+      return;
+    }
+
+    if (num < minAmount) {
+      setStakeError(`Minimum stake is ${minAmount} ${stakeToken}`);
       return;
     }
 
@@ -346,7 +353,7 @@ export const MainBoard = () => {
                 {/* Currency Buttons in Facto style */}
                 <div className="flex items-center bg-[#f0f0f3] rounded-xl p-1 border border-[#e6e6eb]">
                   <button
-                    onClick={() => { playClick(); setStakeToken('ETH'); setStakeAmount('0.02'); }}
+                    onClick={() => { playClick(); setStakeToken('ETH'); setStakeAmount('0.0005'); setStakeError(''); }}
                     className={`px-4 py-1.5 rounded-lg mono text-[13px] font-bold transition-all cursor-pointer ${
                       stakeToken === 'ETH'
                         ? 'bg-white text-[#0d0e11] shadow-sm'
@@ -356,7 +363,7 @@ export const MainBoard = () => {
                     ETH
                   </button>
                   <button
-                    onClick={() => { playClick(); setStakeToken('USDG'); setStakeAmount('50'); }}
+                    onClick={() => { playClick(); setStakeToken('USDG'); setStakeAmount('1'); setStakeError(''); }}
                     className={`px-4 py-1.5 rounded-lg mono text-[13px] font-bold transition-all cursor-pointer ${
                       stakeToken === 'USDG'
                         ? 'bg-white text-[#0d0e11] shadow-sm'
@@ -371,11 +378,19 @@ export const MainBoard = () => {
                 <div className="flex-1">
                   <input
                     type="number"
-                    step={stakeToken === 'ETH' ? '0.005' : '10'}
+                    step={stakeToken === 'ETH' ? '0.0005' : '1'}
+                    min={stakeToken === 'ETH' ? '0.0005' : '1'}
                     value={stakeAmount}
-                    onChange={(e) => setStakeAmount(e.target.value)}
-                    className="w-full bg-[#f8f8fa] border border-[#e6e6eb] rounded-xl px-4 py-2 mono text-[18px] text-right font-bold text-[#0d0e11] focus:outline-none focus:border-[#f243ac] focus:bg-white transition-all shadow-inner"
-                    placeholder="0.00"
+                    onChange={(e) => {
+                      setStakeAmount(e.target.value);
+                      setStakeError('');
+                    }}
+                    className={`w-full bg-[#f8f8fa] border rounded-xl px-4 py-2 mono text-[18px] text-right font-bold text-[#0d0e11] focus:outline-none focus:bg-white transition-all shadow-inner ${
+                      (parseFloat(stakeAmount) > 0 && parseFloat(stakeAmount) < (stakeToken === 'ETH' ? 0.0005 : 1))
+                        ? 'border-red-400 focus:border-red-500 bg-red-50/20'
+                        : 'border-[#e6e6eb] focus:border-[#f243ac]'
+                    }`}
+                    placeholder={stakeToken === 'ETH' ? '0.0005' : '1'}
                   />
                 </div>
               </div>
@@ -383,13 +398,13 @@ export const MainBoard = () => {
               {/* Quick Amount Buttons */}
               <div className="grid grid-cols-3 gap-2">
                 {[
+                  { label: stakeToken === 'ETH' ? '+0.0005' : '+1', val: stakeToken === 'ETH' ? '0.0005' : '1' },
                   { label: stakeToken === 'ETH' ? '+0.005' : '+10', val: stakeToken === 'ETH' ? '0.005' : '10' },
-                  { label: stakeToken === 'ETH' ? '+0.02' : '+50', val: stakeToken === 'ETH' ? '0.02' : '50' },
-                  { label: stakeToken === 'ETH' ? '+0.10' : '+200', val: stakeToken === 'ETH' ? '0.1' : '200' }
+                  { label: stakeToken === 'ETH' ? '+0.02' : '+50', val: stakeToken === 'ETH' ? '0.02' : '50' }
                 ].map(b => (
                   <button
                     key={b.label}
-                    onClick={() => { playClick(); setStakeAmount(b.val); }}
+                    onClick={() => { playClick(); setStakeAmount(b.val); setStakeError(''); }}
                     className="py-1.5 rounded-xl bg-[#f8f8fa] border border-[#e6e6eb] mono text-[12px] font-semibold text-[#0d0e11] hover:bg-[#eaeaee] transition-colors cursor-pointer"
                   >
                     {b.label}
@@ -399,9 +414,12 @@ export const MainBoard = () => {
             </div>
 
             {/* Error / Success Feedback */}
-            {stakeError && (
-              <div className="text-[12px] text-red-600 mb-3 bg-red-50 p-2.5 rounded-lg border border-red-200 font-medium">
-                {stakeError}
+            {(stakeError || (parseFloat(stakeAmount) > 0 && parseFloat(stakeAmount) < (stakeToken === 'ETH' ? 0.0005 : 1))) && (
+              <div className="text-[12px] text-red-600 mb-3 bg-red-50 p-3 rounded-xl border border-red-200 font-semibold flex items-center gap-2 animate-fadeIn">
+                <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                <span>
+                  {stakeError || `Minimum stake is ${stakeToken === 'ETH' ? '0.0005 ETH' : '1 USDG'}`}
+                </span>
               </div>
             )}
             {stakeSuccess && (
@@ -414,8 +432,8 @@ export const MainBoard = () => {
             {isConnected ? (
               <button
                 onClick={handlePlaceStake}
-                disabled={isStaking}
-                className="btn-pink w-full py-3.5 text-[15px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                disabled={isStaking || (parseFloat(stakeAmount) > 0 && parseFloat(stakeAmount) < (stakeToken === 'ETH' ? 0.0005 : 1))}
+                className="btn-pink w-full py-3.5 text-[15px] font-bold flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {isStaking ? (
                   <>

@@ -48,8 +48,15 @@ export const PlotDrawer = () => {
       return;
     }
 
+    const minAllowed = stakeToken === 'ETH' ? 0.0005 : 1;
+
     if (numAmount <= 0) {
       setError('Please enter a valid stake amount.');
+      return;
+    }
+
+    if (numAmount < minAllowed) {
+      setError(`Minimum stake is ${minAllowed} ${stakeToken}.`);
       return;
     }
 
