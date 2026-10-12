@@ -152,13 +152,15 @@ export const WalletProvider = ({ children }) => {
   // Switch or Add Robinhood Chain
   const switchToRobinhoodChain = async (provider) => {
     const p = provider || activeProvider || window.ethereum;
-    if (!p) return;
+    if (!p) return false;
     try {
       await p.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: ROBINHOOD_CHAIN.chainId }],
       });
       setIsWrongNetwork(false);
+      setConnectionError('');
+      return true;
     } catch (switchError) {
       // 4902 error code indicates that the chain has not been added yet
       if (switchError.code === 4902 || switchError.data?.originalError?.code === 4902) {
@@ -176,9 +178,22 @@ export const WalletProvider = ({ children }) => {
             ],
           });
           setIsWrongNetwork(false);
+          setConnectionError('');
+          return true;
         } catch (addError) {
           console.error('Failed to add Robinhood Chain:', addError);
+          const msg = 'This wallet does not support adding custom chains. Please use MetaMask or Rabby.';
+          setConnectionError(msg);
+          throw new Error(msg);
         }
+      } else if (switchError.code === 4001) {
+        const msg = 'Network switch was rejected or cancelled.';
+        setConnectionError(msg);
+        throw new Error(msg);
+      } else {
+        const msg = switchError.message || 'Robinhood Chain (EVM 2340) is not supported by this wallet. Please use MetaMask or Rabby.';
+        setConnectionError(msg);
+        throw new Error(msg);
       }
     }
   };
@@ -191,7 +206,7 @@ export const WalletProvider = ({ children }) => {
     const provider = selectedProvider || activeProvider || window.ethereum;
 
     if (!provider) {
-      setConnectionError('No Ethereum wallet detected in your browser. Please install MetaMask, Robinhood Wallet, or Rabby.');
+      setConnectionError('No Ethereum wallet detected. Please install MetaMask, Robinhood Wallet, or Rabby.');
       setIsConnecting(false);
       return;
     }
@@ -199,52 +214,54 @@ export const WalletProvider = ({ children }) => {
     try {
       setActiveProvider(provider);
 
-      // Trigger REAL browser extension connection popup!
+      // 1. Request accounts
       const accounts = await provider.request({
         method: 'eth_requestAccounts',
       });
 
-      if (accounts && accounts.length > 0) {
-        const fullAddr = accounts[0];
-        const shortAddr = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
-        
-        setFullAddress(fullAddr);
-        setAccount(shortAddr);
-        setIsConnected(true);
-
-        try {
-          localStorage.setItem('tood_last_connected_wallet', fullAddr);
-        } catch (e) {}
-
-        // Sync user profile to Supabase database
-        await syncUserProfile(fullAddr);
-
-        // Check Network
-        try {
-          const chainId = await provider.request({ method: 'eth_chainId' });
-          setCurrentChainId(chainId);
-          if (parseInt(chainId, 16) !== ROBINHOOD_CHAIN.chainIdDecimal) {
-            setIsWrongNetwork(true);
-            // Prompt network switch
-            await switchToRobinhoodChain(provider);
-          }
-        } catch (chainErr) {
-          console.warn('Network check warning:', chainErr);
-        }
-
-        // Fetch balance
-        await fetchBalance(fullAddr, provider);
-
-        // Load persistent profile & USDG balance
-        await loadUserData(fullAddr, 0);
-        setShowWalletModal(false);
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts returned from wallet.');
       }
+
+      const fullAddr = accounts[0];
+
+      // 2. Strict Network Check BEFORE marking connected!
+      const chainId = await provider.request({ method: 'eth_chainId' });
+      setCurrentChainId(chainId);
+
+      if (parseInt(chainId, 16) !== ROBINHOOD_CHAIN.chainIdDecimal) {
+        setIsWrongNetwork(true);
+        // Prompt network switch - if user cancels/closes or wallet rejects, will throw
+        await switchToRobinhoodChain(provider);
+      }
+
+      // 3. Mark connected ONLY after network is verified
+      const shortAddr = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
+      setFullAddress(fullAddr);
+      setAccount(shortAddr);
+      setIsConnected(true);
+      setIsWrongNetwork(false);
+
+      try {
+        localStorage.setItem('tood_last_connected_wallet', fullAddr);
+      } catch (e) {}
+
+      // Sync user profile to Supabase database
+      await syncUserProfile(fullAddr);
+
+      // Fetch balance on Robinhood Chain
+      await fetchBalance(fullAddr, provider);
+
+      // Load persistent profile
+      await loadUserData(fullAddr, 0);
+      setShowWalletModal(false);
     } catch (err) {
-      console.error('Wallet connection rejected or failed:', err);
+      console.warn('Wallet connection aborted or failed:', err);
+      disconnectWallet();
       if (err.code === 4001) {
         setConnectionError('Connection request rejected by user.');
       } else {
-        setConnectionError(err.message || 'Connection failed. Please try again.');
+        setConnectionError(err.message || 'Connection failed. Please use MetaMask or Rabby on Robinhood Chain.');
       }
     } finally {
       setIsConnecting(false);
