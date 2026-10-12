@@ -87,7 +87,7 @@ export const WalletProvider = ({ children }) => {
   const [activeProvider, setActiveProvider] = useState(null);
 
   // Load persistent user data (USDG balance & profile stats)
-  const loadUserData = async (address, defaultUsdg = 2500) => {
+  const loadUserData = async (address, defaultUsdg = 0) => {
     if (!address) return;
     const key = address.toLowerCase();
 
@@ -236,7 +236,7 @@ export const WalletProvider = ({ children }) => {
         await fetchBalance(fullAddr, provider);
 
         // Load persistent profile & USDG balance
-        await loadUserData(fullAddr, 2500);
+        await loadUserData(fullAddr, 0);
         setShowWalletModal(false);
       }
     } catch (err) {
@@ -251,22 +251,6 @@ export const WalletProvider = ({ children }) => {
     }
   };
 
-  // Demo Sandbox Wallet Connect (One-click instant trial)
-  const connectDemoMode = async () => {
-    const demoAddr = '0x71C83907c0E2134567890abcdef1234567890123';
-    setFullAddress(demoAddr);
-    setAccount('0x71C8...4E21');
-    setIsConnected(true);
-    setEthBalance(5.50);
-    try {
-      localStorage.setItem('tood_last_connected_wallet', 'demo');
-    } catch (e) {}
-    setShowWalletModal(false);
-    setConnectionError('');
-    await syncUserProfile(demoAddr);
-    await loadUserData(demoAddr, 10000);
-  };
-
   const disconnectWallet = () => {
     setIsConnected(false);
     setAccount(null);
@@ -278,19 +262,6 @@ export const WalletProvider = ({ children }) => {
     try {
       localStorage.removeItem('tood_last_connected_wallet');
     } catch (e) {}
-  };
-
-  const claimFaucet = () => {
-    setEthBalance((prev) => +(prev + 2.0).toFixed(4));
-    setUsdgBalance((prev) => {
-      const next = prev + 5000;
-      if (fullAddress) {
-        try {
-          localStorage.setItem(`tood_usdg_${fullAddress.toLowerCase()}`, next.toString());
-        } catch (e) {}
-      }
-      return next;
-    });
   };
 
   const deductBalance = (amount, tokenType) => {
@@ -333,9 +304,7 @@ export const WalletProvider = ({ children }) => {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('tood_last_connected_wallet');
-      if (saved === 'demo') {
-        connectDemoMode();
-      } else if (saved && (window.ethereum || activeProvider)) {
+      if (saved && saved !== 'demo' && (window.ethereum || activeProvider)) {
         const p = activeProvider || window.ethereum;
         p?.request?.({ method: 'eth_accounts' })
           .then((accs) => {
@@ -399,13 +368,12 @@ export const WalletProvider = ({ children }) => {
         discoveredProviders,
         setShowWalletModal,
         connectWallet,
-        connectDemoMode,
         disconnectWallet,
-        claimFaucet,
         deductBalance,
         creditBalance,
         switchToRobinhoodChain,
         loadUserData,
+        refreshBalance: (addr) => fetchBalance(addr || fullAddress),
       }}
     >
       {children}

@@ -17,9 +17,7 @@ export const WalletModal = () => {
     connectionError,
     discoveredProviders,
     connectWallet,
-    connectDemoMode,
     disconnectWallet,
-    claimFaucet,
     switchToRobinhoodChain
   } = useWallet();
   const { playClick } = useSound();
@@ -146,23 +144,6 @@ export const WalletModal = () => {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#fff5fa] border border-[#f243ac]/20 flex items-center justify-between">
-              <div>
-                <div className="text-[13px] font-bold text-[#0d0e11] flex items-center gap-1">
-                  <Sparkles size={14} className="text-[#f243ac]" /> Demo Faucet
-                </div>
-                <div className="mono text-[11px] text-[#0d0e1180]">
-                  Add +2.00 ETH & +5,000 USDG test funds
-                </div>
-              </div>
-              <button
-                onClick={() => { playClick(); claimFaucet(); }}
-                className="px-3 py-1.5 rounded-lg bg-[#f243ac] text-white font-bold text-[12px] hover:bg-[#e0329a] transition-colors cursor-pointer"
-              >
-                Claim
-              </button>
-            </div>
-
             <button
               onClick={() => { playClick(); disconnectWallet(); setShowWalletModal(false); }}
               className="w-full py-2.5 rounded-xl bg-white border border-red-200 text-red-600 hover:bg-red-50 transition-colors text-[13px] font-medium cursor-pointer"
@@ -254,28 +235,6 @@ export const WalletModal = () => {
                   </div>
                 );
               })}
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={() => { playClick(); connectDemoMode(); }}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#fff5fa] hover:bg-[#ffeef7] border border-[#f243ac]/30 transition-all text-left cursor-pointer group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-[#f243ac] text-white flex items-center justify-center font-bold text-[14px]">
-                    ⚡
-                  </div>
-                  <div>
-                    <div className="font-bold text-[14px] text-[#f243ac]">
-                      Instant Demo Mode
-                    </div>
-                    <div className="mono text-[11px] text-[#0d0e1180]">
-                      Play immediately with +5.50 ETH & +10,000 USDG
-                    </div>
-                  </div>
-                </div>
-                <span className="mono text-[12px] font-bold text-[#f243ac]">PLAY →</span>
-              </button>
             </div>
 
           </div>

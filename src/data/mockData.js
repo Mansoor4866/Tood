@@ -1,24 +1,24 @@
 // 16 Real Tokens mapped to the 16 Grid plots (A1..D4) with authentic avatars and colors
 export const GRID_TOKENS = [
-  { id: 0, cell: 'A1', name: 'Pons', symbol: 'PONS', color: '#b6d7bb', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=pons&backgroundColor=ffffff', ethStake: 1.45, usdgStake: 3200, stakersCount: 12, volume: '45.2 ETH' },
-  { id: 1, cell: 'B1', name: 'Pepe Hood', symbol: 'PEPE', color: '#52c41a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=pepehood&backgroundColor=498835', ethStake: 2.80, usdgStake: 5400, stakersCount: 28, volume: '88.5 ETH' },
-  { id: 2, cell: 'C1', name: 'Cyber Doge', symbol: 'CDOGE', color: '#ff7849', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=cdoge&backgroundColor=ffd7a8', ethStake: 0.95, usdgStake: 1800, stakersCount: 8, volume: '22.1 ETH' },
-  { id: 3, cell: 'D1', name: 'Robin Cat', symbol: 'CAT', color: '#e3c98a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=robincat&backgroundColor=d4b36a', ethStake: 3.40, usdgStake: 7800, stakersCount: 35, volume: '112.4 ETH' },
+  { id: 0, cell: 'A1', name: 'Pons', symbol: 'PONS', color: '#b6d7bb', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=pons&backgroundColor=ffffff', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '45.2 ETH' },
+  { id: 1, cell: 'B1', name: 'Pepe Hood', symbol: 'PEPE', color: '#52c41a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=pepehood&backgroundColor=498835', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '88.5 ETH' },
+  { id: 2, cell: 'C1', name: 'Cyber Doge', symbol: 'CDOGE', color: '#ff7849', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=cdoge&backgroundColor=ffd7a8', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '22.1 ETH' },
+  { id: 3, cell: 'D1', name: 'Robin Cat', symbol: 'CAT', color: '#e3c98a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=robincat&backgroundColor=d4b36a', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '112.4 ETH' },
   
-  { id: 4, cell: 'A2', name: 'Mushroom Protocol', symbol: 'SHROOM', color: '#d48806', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=shroom&backgroundColor=a88532', ethStake: 1.10, usdgStake: 2450, stakersCount: 14, volume: '34.6 ETH' },
-  { id: 5, cell: 'B2', name: 'Pyramid Dao', symbol: 'PYRA', color: '#00c805', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=pyramid&backgroundColor=1f662a', ethStake: 2.15, usdgStake: 4100, stakersCount: 19, volume: '67.0 ETH' },
-  { id: 6, cell: 'C2', name: 'Candy Swap', symbol: 'CANDY', color: '#eb2f96', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=candy&backgroundColor=e66ba7', ethStake: 4.20, usdgStake: 9500, stakersCount: 42, volume: '145.8 ETH' },
-  { id: 7, cell: 'D2', name: 'Loop Ring', symbol: 'LOOP', color: '#2775ca', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=loop&backgroundColor=254d7e', ethStake: 1.85, usdgStake: 6200, stakersCount: 22, volume: '56.3 ETH' },
+  { id: 4, cell: 'A2', name: 'Mushroom Protocol', symbol: 'SHROOM', color: '#d48806', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=shroom&backgroundColor=a88532', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '34.6 ETH' },
+  { id: 5, cell: 'B2', name: 'Pyramid Dao', symbol: 'PYRA', color: '#00c805', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=pyramid&backgroundColor=1f662a', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '67.0 ETH' },
+  { id: 6, cell: 'C2', name: 'Candy Swap', symbol: 'CANDY', color: '#eb2f96', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=candy&backgroundColor=e66ba7', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '145.8 ETH' },
+  { id: 7, cell: 'D2', name: 'Loop Ring', symbol: 'LOOP', color: '#2775ca', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=loop&backgroundColor=254d7e', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '56.3 ETH' },
 
-  { id: 8, cell: 'A3', name: 'Mech Bot', symbol: 'MECH', color: '#c0c0c0', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=mechbot&backgroundColor=e0e0e0', ethStake: 1.60, usdgStake: 3500, stakersCount: 15, volume: '49.1 ETH' },
-  { id: 9, cell: 'B3', name: 'Sad Cat', symbol: 'SAD', color: '#ffffff', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=sadcat&backgroundColor=ffffff', ethStake: 0.85, usdgStake: 1600, stakersCount: 9, volume: '19.8 ETH' },
-  { id: 10, cell: 'C3', name: 'Neural Head', symbol: 'BRAIN', color: '#ffd700', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=brainai&backgroundColor=1a3b3a', ethStake: 2.05, usdgStake: 4600, stakersCount: 20, volume: '73.2 ETH' },
-  { id: 11, cell: 'D3', name: 'Golden Eagle', symbol: 'EAGLE', color: '#e3c98a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=eagle&backgroundColor=d9a84e', ethStake: 1.75, usdgStake: 3800, stakersCount: 17, volume: '58.7 ETH' },
+  { id: 8, cell: 'A3', name: 'Mech Bot', symbol: 'MECH', color: '#c0c0c0', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=mechbot&backgroundColor=e0e0e0', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '49.1 ETH' },
+  { id: 9, cell: 'B3', name: 'Sad Cat', symbol: 'SAD', color: '#ffffff', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=sadcat&backgroundColor=ffffff', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '19.8 ETH' },
+  { id: 10, cell: 'C3', name: 'Neural Head', symbol: 'BRAIN', color: '#ffd700', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=brainai&backgroundColor=1a3b3a', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '73.2 ETH' },
+  { id: 11, cell: 'D3', name: 'Golden Eagle', symbol: 'EAGLE', color: '#e3c98a', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=eagle&backgroundColor=d9a84e', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '58.7 ETH' },
 
-  { id: 12, cell: 'A4', name: 'Knight Guard', symbol: 'GUARD', color: '#7c887e', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=knight&backgroundColor=5c6a60', ethStake: 0.70, usdgStake: 1200, stakersCount: 6, volume: '14.5 ETH' },
-  { id: 13, cell: 'B4', name: 'Oracle Eye', symbol: 'ORCL', color: '#00f0ff', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=oracle&backgroundColor=1b4757', ethStake: 1.30, usdgStake: 2900, stakersCount: 11, volume: '39.0 ETH' },
-  { id: 14, cell: 'C4', name: 'Pixel Fox', symbol: 'FOX', color: '#52c41a', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=pixelfox&backgroundColor=284d2a', ethStake: 1.15, usdgStake: 2100, stakersCount: 10, volume: '31.2 ETH' },
-  { id: 15, cell: 'D4', name: 'Hedgehog Club', symbol: 'HODG', color: '#ff4d4f', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=hedgehog&backgroundColor=8f5b40', ethStake: 0.50, usdgStake: 900, stakersCount: 5, volume: '11.0 ETH' }
+  { id: 12, cell: 'A4', name: 'Knight Guard', symbol: 'GUARD', color: '#7c887e', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=knight&backgroundColor=5c6a60', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '14.5 ETH' },
+  { id: 13, cell: 'B4', name: 'Oracle Eye', symbol: 'ORCL', color: '#00f0ff', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=oracle&backgroundColor=1b4757', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '39.0 ETH' },
+  { id: 14, cell: 'C4', name: 'Pixel Fox', symbol: 'FOX', color: '#52c41a', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=pixelfox&backgroundColor=284d2a', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '31.2 ETH' },
+  { id: 15, cell: 'D4', name: 'Hedgehog Club', symbol: 'HODG', color: '#ff4d4f', avatar: 'https://api.dicebear.com/7.x/identicon/svg?seed=hedgehog&backgroundColor=8f5b40', ethStake: 0, usdgStake: 0, stakersCount: 0, volume: '11.0 ETH' }
 ];
 
 export const INITIAL_PLOTS = GRID_TOKENS;

@@ -2,7 +2,17 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { INITIAL_PLOTS, INITIAL_HISTORY, INITIAL_LEADERBOARD } from '../data/mockData';
 import { useSound } from './SoundContext';
 import { useWallet } from './WalletContext';
-import { recordStakeActivity, recordRoundSettlement, fetchRoundsLog, updateUserGameStats, fetchLeaderboardFromProfiles } from '../lib/supabase';
+import {
+  recordStakeActivity,
+  recordRoundSettlement,
+  fetchRoundsLog,
+  updateUserGameStats,
+  fetchLeaderboardFromProfiles,
+  fetchActiveRound,
+  fetchRoundStakes,
+  subscribeToStakes,
+  subscribeToRounds
+} from '../lib/supabase';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
@@ -11,9 +21,9 @@ const ROUND_TIME = 60; // 60 seconds per round
 
 export const GameProvider = ({ children }) => {
   const { playTick, playShuffle, playWin } = useSound();
-  const { creditBalance, fullAddress, account, loadUserData } = useWallet();
+  const { creditBalance, fullAddress, account, loadUserData, refreshBalance } = useWallet();
 
-  const [roundNumber, setRoundNumber] = useState(143);
+  const [roundNumber, setRoundNumber] = useState(1);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [roundStatus, setRoundStatus] = useState('betting'); // 'betting' | 'drawing' | 'settled'
   
@@ -53,41 +63,76 @@ export const GameProvider = ({ children }) => {
     return () => clearInterval(timer);
   }, [roundStatus, plots]);
 
-  // Autonomous simulated stakes from other outlaws on chain to make board feel alive
+  // Realtime multi-player stake synchronization via Supabase
   useEffect(() => {
-    if (roundStatus !== 'betting') return;
-
-    const botInterval = setInterval(() => {
-      if (Math.random() > 0.4) {
-        const randomPlotIndex = Math.floor(Math.random() * 16);
-        const randomEth = +(Math.random() * 0.4 + 0.05).toFixed(2);
-        const randomUsdg = +(Math.random() * 800 + 100).toFixed(0);
-
-        setPlots(prev => prev.map((p, idx) => {
-          if (idx === randomPlotIndex) {
+    const unsubStakes = subscribeToStakes((newStake) => {
+      if (Number(newStake.round_number) === roundNumber) {
+        setPlots(prev => prev.map(p => {
+          if (p.id === Number(newStake.plot_id)) {
             return {
               ...p,
-              ethStake: +(p.ethStake + randomEth).toFixed(2),
-              usdgStake: +(p.usdgStake + Number(randomUsdg)),
+              ethStake: +(p.ethStake + (Number(newStake.eth_amount) || 0)).toFixed(4),
+              usdgStake: +(p.usdgStake + (Number(newStake.usdg_amount) || 0)).toFixed(2),
               stakersCount: p.stakersCount + 1
             };
           }
           return p;
         }));
       }
-    }, 3500);
+    });
 
-    return () => clearInterval(botInterval);
-  }, [roundStatus]);
+    const unsubRounds = subscribeToRounds((roundPayload, eventType) => {
+      if (roundPayload) {
+        if (eventType === 'INSERT') {
+          setRoundNumber(roundPayload.round_number);
+          setRoundStatus('betting');
+          setTimeLeft(ROUND_TIME);
+        } else if (eventType === 'UPDATE' && roundPayload.status === 'settled') {
+          fetchRoundsLog().then(h => h && h.length && setHistory(h));
+          fetchLeaderboardFromProfiles().then(lb => lb && lb.length && setLeaderboard(lb));
+        }
+      }
+    });
 
-  // Fetch historical rounds and live leaderboard from Supabase on start
+    return () => {
+      unsubStakes();
+      unsubRounds();
+    };
+  }, [roundNumber]);
+
+  // Fetch real active round, stakes, and leaderboard on startup
   useEffect(() => {
     async function loadInitialData() {
+      try {
+        const active = await fetchActiveRound();
+        if (active && active.round_number) {
+          setRoundNumber(active.round_number);
+          if (active.status === 'betting') {
+            setRoundStatus('betting');
+          }
+          const roundStakes = await fetchRoundStakes(active.round_number);
+          if (roundStakes && roundStakes.length > 0) {
+            setPlots(prev => prev.map(p => {
+              const plotStakes = roundStakes.filter(s => s.plot_id === p.id);
+              const ethTotal = plotStakes.reduce((acc, s) => acc + (Number(s.eth_amount) || 0), 0);
+              const usdgTotal = plotStakes.reduce((acc, s) => acc + (Number(s.usdg_amount) || 0), 0);
+              return {
+                ...p,
+                ethStake: +ethTotal.toFixed(4),
+                usdgStake: +usdgTotal.toFixed(2),
+                stakersCount: plotStakes.length
+              };
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn('Active round load note:', e);
+      }
+
       try {
         const liveHistory = await fetchRoundsLog();
         if (liveHistory && liveHistory.length > 0) {
           setHistory(liveHistory);
-          // Sync current round number with latest round + 1
           if (liveHistory[0]?.round) {
             setRoundNumber(liveHistory[0].round + 1);
           }
@@ -270,12 +315,12 @@ export const GameProvider = ({ children }) => {
     setWinnerDetails(null);
     setUserStakes({});
     
-    // Refresh plots with random baseline seeds
+    // Refresh plots with clean 0 initial stakes for fresh round
     setPlots(INITIAL_PLOTS.map(p => ({
       ...p,
-      ethStake: +(Math.random() * 1.5 + 0.3).toFixed(2),
-      usdgStake: +(Math.random() * 3000 + 500).toFixed(0),
-      stakersCount: Math.floor(Math.random() * 15 + 3)
+      ethStake: 0,
+      usdgStake: 0,
+      stakersCount: 0
     })));
   };
 

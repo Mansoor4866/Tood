@@ -451,3 +451,96 @@ export async function fetchLeaderboardFromProfiles() {
     return INITIAL_LEADERBOARD;
   }
 }
+
+/**
+ * Fetch all stakes for a specific round
+ */
+export async function fetchRoundStakes(roundNumber) {
+  if (!isSupabaseConfigured || !supabase || !roundNumber) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('stakes')
+      .select('*')
+      .eq('round_number', roundNumber);
+
+    if (error) {
+      console.warn('Supabase fetch round stakes error:', error.message);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('Error fetching round stakes:', err);
+    return [];
+  }
+}
+
+/**
+ * Subscribe to realtime stakes placed by any player
+ */
+export function subscribeToStakes(onNewStake) {
+  if (!isSupabaseConfigured || !supabase) return () => {};
+
+  const channel = supabase
+    .channel('stakes-realtime')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'stakes' },
+      (payload) => {
+        if (payload.new) {
+          onNewStake(payload.new);
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * Subscribe to realtime rounds changes (new rounds, settlements)
+ */
+export function subscribeToRounds(onRoundEvent) {
+  if (!isSupabaseConfigured || !supabase) return () => {};
+
+  const channel = supabase
+    .channel('rounds-realtime')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'rounds' },
+      (payload) => {
+        if (payload.new) {
+          onRoundEvent(payload.new, payload.eventType);
+        }
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
+/**
+ * Fetch the latest active or most recent round from database
+ */
+export async function fetchActiveRound() {
+  if (!isSupabaseConfigured || !supabase) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from('rounds')
+      .select('*')
+      .order('round_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data;
+  } catch (err) {
+    console.warn('fetchActiveRound error:', err);
+    return null;
+  }
+}

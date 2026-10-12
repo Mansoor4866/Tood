@@ -104,8 +104,8 @@ export const Hero = () => {
             <Zap size={13} />
           </div>
           <div className="text-left">
-            <div className="text-[#0d0e11] font-bold">+1.45 ETH Staked</div>
-            <div className="text-[#0d0e1180] text-[10px]">Plot A1 ($PONS)</div>
+            <div className="text-[#0d0e11] font-bold">{totalEthPot > 0 ? `${totalEthPot.toFixed(2)} ETH Live Pot` : 'Open for Stakes'}</div>
+            <div className="text-[#0d0e1180] text-[10px]">Round #{roundNumber}</div>
           </div>
         </div>
       </div>
