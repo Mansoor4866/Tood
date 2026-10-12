@@ -52,57 +52,83 @@ export default async function handler(req, res) {
 
     let payoutEth = 0;
 
-    // 2. Verify eligibility from database
-    if (supabase) {
-      // Check existing claim
-      const { data: existingClaim } = await supabase
-        .from('claims')
+    // 2. Strict Database Verification (NEVER trust client input)
+    if (!supabase) {
+      return res.status(500).json({ success: false, error: 'Database service unavailable for payout verification.' });
+    }
+
+    // Step A: Check if claim already exists in claims table
+    const { data: existingClaim } = await supabase
+      .from('claims')
+      .select('*')
+      .eq('round_number', roundNumber)
+      .eq('wallet_address', cleanAddr)
+      .maybeSingle();
+
+    if (existingClaim) {
+      if (existingClaim.status === 'claimed') {
+        return res.status(400).json({
+          success: false,
+          error: `Winnings for Round #${roundNumber} have already been claimed! Tx: ${existingClaim.tx_hash}`
+        });
+      }
+      if (existingClaim.status === 'processing') {
+        return res.status(429).json({
+          success: false,
+          error: `Payout for Round #${roundNumber} is already currently being processed.`
+        });
+      }
+      payoutEth = Number(existingClaim.amount_eth) || 0;
+    } else {
+      // Step B: Verify directly from settled rounds and verified stakes
+      const { data: roundData } = await supabase
+        .from('rounds')
+        .select('*')
+        .eq('round_number', roundNumber)
+        .maybeSingle();
+
+      if (!roundData || roundData.status !== 'settled' || !roundData.drawn_plot_id) {
+        return res.status(400).json({
+          success: false,
+          error: `Round #${roundNumber} is not settled yet. Payouts can only be claimed after the round is settled.`
+        });
+      }
+
+      // Verify the user actually placed an on-chain stake on the winning plot
+      const { data: userStake } = await supabase
+        .from('stakes')
         .select('*')
         .eq('round_number', roundNumber)
         .eq('wallet_address', cleanAddr)
+        .eq('plot_id', roundData.drawn_plot_id)
         .maybeSingle();
 
-      if (existingClaim) {
-        if (existingClaim.status === 'claimed') {
-          return res.status(400).json({
-            success: false,
-            error: `Winnings for Round #${roundNumber} have already been claimed! Tx: ${existingClaim.tx_hash}`
-          });
-        }
-        payoutEth = Number(existingClaim.amount_eth) || 0;
-      } else {
-        // Compute from round settlement and stakes
-        const { data: roundData } = await supabase
-          .from('rounds')
-          .select('*')
-          .eq('round_number', roundNumber)
-          .maybeSingle();
-
-        if (roundData && roundData.status === 'settled') {
-          const { data: userStake } = await supabase
-            .from('stakes')
-            .select('*')
-            .eq('round_number', roundNumber)
-            .eq('wallet_address', cleanAddr)
-            .eq('plot_id', roundData.drawn_plot_id)
-            .maybeSingle();
-
-          if (userStake) {
-            const totalPotEth = Number(roundData.total_pot_eth) || 0;
-            payoutEth = +(totalPotEth * 0.90).toFixed(4);
-          }
-        }
+      if (!userStake) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied: No winning stake found for this wallet on the drawn plot.'
+        });
       }
+
+      // Compute exact 90% share from verified database pot
+      const totalPotEth = Number(roundData.total_pot_eth) || 0;
+      payoutEth = +(totalPotEth * 0.90).toFixed(4);
     }
 
-    // Fallback to client verified win amount if Supabase sync was pending
-    if (payoutEth <= 0 && clientAmountEth && Number(clientAmountEth) > 0) {
-      payoutEth = Number(clientAmountEth);
-    }
-
+    // Strict validation: Amount must be legitimately calculated and > 0
     if (payoutEth <= 0) {
-      return res.status(400).json({ success: false, error: 'No claimable payout amount found.' });
+      return res.status(400).json({ success: false, error: 'No claimable payout amount found for this round.' });
     }
+
+    // Step C: Atomic Mutex Lock - mark as 'processing' to prevent concurrent re-entrancy / double-claim attacks
+    await supabase
+      .from('claims')
+      .upsert({
+        round_number: roundNumber,
+        wallet_address: cleanAddr,
+        amount_eth: payoutEth,
+        status: 'processing'
+      }, { onConflict: 'round_number,wallet_address' });
 
     // 3. Setup Robinhood Chain Provider & Signer
     const provider = new ethers.JsonRpcProvider(ROBINHOOD_RPC, {
@@ -155,6 +181,18 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('Payout dispatch error:', err);
+    if (supabase && cleanAddr) {
+      try {
+        await supabase
+          .from('claims')
+          .update({ status: 'unclaimed' })
+          .eq('round_number', roundNumber)
+          .eq('wallet_address', cleanAddr)
+          .eq('status', 'processing');
+      } catch (rollbackErr) {
+        console.warn('Claim rollback warning:', rollbackErr);
+      }
+    }
     return res.status(500).json({
       success: false,
       error: err.message || 'On-chain payout transaction failed.'
