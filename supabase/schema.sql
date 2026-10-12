@@ -1,6 +1,6 @@
 -- ==========================================================
 -- TOOD ($TOOD) — Robinhood Chain Database Schema
--- Run this script in the Supabase SQL Editor
+-- Idempotent / Safe to re-run multiple times
 -- ==========================================================
 
 -- 1. Profiles Table (User Wallets & Stats)
@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS public.stakes (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Make sure tx_hash exists if table was created previously
+ALTER TABLE public.stakes ADD COLUMN IF NOT EXISTS tx_hash TEXT;
+
 -- 4. Live Saloon Chat (Realtime Messages)
 CREATE TABLE IF NOT EXISTS public.saloon_messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -72,7 +75,8 @@ CREATE TABLE IF NOT EXISTS public.claims (
   status TEXT DEFAULT 'unclaimed', -- 'unclaimed', 'processing', 'claimed'
   tx_hash TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  claimed_at TIMESTAMPTZ
+  claimed_at TIMESTAMPTZ,
+  CONSTRAINT unique_round_wallet_claim UNIQUE (round_number, wallet_address)
 );
 
 -- Enable Row Level Security (RLS)
@@ -82,28 +86,75 @@ ALTER TABLE public.stakes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.saloon_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.claims ENABLE ROW LEVEL SECURITY;
 
--- Allow Public Read Access (Anon key can read game states and chat)
+-- Safely recreate policies (avoid "already exists" errors)
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public profiles are insertable/updatable" ON public.profiles;
 CREATE POLICY "Public profiles are insertable/updatable" ON public.profiles FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Rounds are viewable by everyone" ON public.rounds;
 CREATE POLICY "Rounds are viewable by everyone" ON public.rounds FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Rounds are insertable/updatable" ON public.rounds;
 CREATE POLICY "Rounds are insertable/updatable" ON public.rounds FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Stakes are viewable by everyone" ON public.stakes;
 CREATE POLICY "Stakes are viewable by everyone" ON public.stakes FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Stakes are insertable/updatable" ON public.stakes;
 CREATE POLICY "Stakes are insertable/updatable" ON public.stakes FOR ALL USING (true);
 
+DROP POLICY IF EXISTS "Saloon messages are viewable by everyone" ON public.saloon_messages;
 CREATE POLICY "Saloon messages are viewable by everyone" ON public.saloon_messages FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Saloon messages can be posted by everyone" ON public.saloon_messages;
 CREATE POLICY "Saloon messages can be posted by everyone" ON public.saloon_messages FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Claims are viewable by everyone" ON public.claims;
 CREATE POLICY "Claims are viewable by everyone" ON public.claims FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Claims are insertable/updatable" ON public.claims;
 CREATE POLICY "Claims are insertable/updatable" ON public.claims FOR ALL USING (true);
 
--- Enable Realtime Subscriptions for live updates
-ALTER PUBLICATION supabase_realtime ADD TABLE public.rounds;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.stakes;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.saloon_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.claims;
+-- Safely Enable Realtime Subscriptions (skip if already added)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'rounds'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.rounds;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'stakes'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.stakes;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'saloon_messages'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.saloon_messages;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'profiles'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables 
+    WHERE pubname = 'supabase_realtime' AND tablename = 'claims'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.claims;
+  END IF;
+END $$;
 
 -- Pre-seed initial saloon chats if table is empty
 INSERT INTO public.saloon_messages (wallet_address, text, avatar_url, created_at)
