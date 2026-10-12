@@ -159,6 +159,22 @@ export const Hero = () => {
           Stake a plot before the clock runs out. The chain draws a single plot, and everyone standing on it walks away with ninety percent of the round.
         </p>
 
+        {/* Guaranteed Winner Fair Play Banner */}
+        <div className="mt-6 max-w-2xl mx-auto inline-flex items-center gap-3 px-4 sm:px-5 py-3 rounded-2xl bg-[#e8f7ee] border border-[#008638]/25 text-left shadow-sm">
+          <div className="h-9 w-9 rounded-xl bg-[#008638] text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Trophy size={18} />
+          </div>
+          <div>
+            <div className="text-[13px] font-bold text-[#008638] flex items-center gap-1.5">
+              <span>Guaranteed Winner Every Round</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#008638]/15 text-[#008638] font-bold">FAIR PLAY</span>
+            </div>
+            <div className="text-[12px] text-[#0d0e11cc] mt-0.5 leading-snug">
+              Empty plots with 0 stakes are excluded from the draw. The winning plot is drawn <strong>exclusively from active staked plots</strong> so someone always takes the 90% pot!
+            </div>
+          </div>
+        </div>
+
         {/* Round Stats Bar Card in Facto Style */}
         <div className="mt-10 facto-card p-6 sm:p-8 text-left bg-white/95 backdrop-blur-md">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">

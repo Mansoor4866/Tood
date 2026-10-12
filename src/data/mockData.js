@@ -35,8 +35,8 @@ export const INITIAL_SALOON_CHATS = [
 export const HOUSE_RULES = [
   {
     num: "01",
-    title: "An empty plot pays nobody",
-    description: "If the draw lands on a plot holding less than the round minimum, that whole pot goes back to the people who staked it, and no fee is taken"
+    title: "Only staked plots can win",
+    description: "Empty plots with zero stakes are excluded from the draw. The winning plot is chosen exclusively from plots holding active player stakes, guaranteeing a winner every single round!"
   },
   {
     num: "02",

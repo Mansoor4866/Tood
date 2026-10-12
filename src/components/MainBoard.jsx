@@ -160,6 +160,19 @@ export const MainBoard = () => {
             )}
           </div>
 
+          {/* Active Plots Only Fair Play Notice Banner */}
+          <div className="mb-4 px-3.5 py-2.5 rounded-2xl bg-[#e8f7ee] border border-[#008638]/20 flex items-center justify-between text-[12px] mono text-[#008638]">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-[#008638] animate-pulse" />
+              <span className="font-bold">Fair Play Rule:</span>
+              <span className="text-[#0d0e11b3] hidden sm:inline">Draw selects strictly from active staked plots. Empty plots are excluded!</span>
+              <span className="text-[#0d0e11b3] sm:hidden">Only staked plots can win!</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-[#008638]/30 shadow-xs">
+              Guaranteed Winner
+            </span>
+          </div>
+
           {/* 4x4 Grid Matrix */}
           <div className="grid grid-cols-4 gap-3 sm:gap-4">
             {plots.map((plot) => {
