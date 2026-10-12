@@ -1,7 +1,7 @@
 import React from 'react';
 import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Sparkles } from 'lucide-react';
 
 export const Header = ({ activeTab, setActiveTab }) => {
   const { isConnected, account, ethBalance, usdgBalance, setShowWalletModal } = useWallet();
@@ -57,6 +57,12 @@ export const Header = ({ activeTab, setActiveTab }) => {
         {/* Right: Sound Toggle, Twitter X, Connect Button */}
         <div className="flex items-center gap-3">
           
+          {/* $TOOD Token Teaser Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#fff5fa] border border-[#f243ac]/25 text-[#f243ac] text-[12px] font-mono font-bold shadow-xs">
+            <Sparkles size={12} className="animate-pulse" />
+            <span>$TOOD · Coming Soon</span>
+          </div>
+
           {/* Sound Toggle */}
           <button
             onClick={() => setMuted(!muted)}

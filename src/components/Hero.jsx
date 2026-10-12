@@ -141,7 +141,7 @@ export const Hero = () => {
           <span className="text-[#0d0e114d]">·</span>
           <span className="text-[#f243ac] font-bold flex items-center gap-1">
             <Sparkles size={12} />
-            Season 1 Live
+            Season 1 · $TOOD Airdrop Active
           </span>
         </div>
 

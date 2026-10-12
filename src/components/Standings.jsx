@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../context/GameContext';
-import { Trophy, Medal, Award, Flame } from 'lucide-react';
+import { Trophy, Medal, Award, Flame, Sparkles } from 'lucide-react';
 
 export const Standings = () => {
   const { leaderboard } = useGame();
@@ -10,7 +10,7 @@ export const Standings = () => {
     <section className="max-w-[1240px] mx-auto px-5 sm:px-8 py-10">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-baseline justify-between gap-4 mb-6">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-black border border-black/20 shadow-sm p-1 flex items-center justify-center shrink-0">
             <img src="/assets/TOOD LOGO-03.jpg" alt="TOOD Eyes" className="w-full h-full object-contain" />
@@ -26,6 +26,27 @@ export const Standings = () => {
         </div>
         <span className="mono text-[12px] text-[#0d0e1180] bg-white px-3.5 py-1.5 rounded-full border border-[#e6e6eb] font-semibold shadow-sm self-start md:self-auto">
           Season 1 Standings
+        </span>
+      </div>
+
+      {/* $TOOD Airdrop Rewards Teaser Banner */}
+      <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-[#fff5fa] border border-[#f243ac]/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-[#f243ac] text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <div className="text-[14px] font-bold text-[#0d0e11] flex items-center gap-2">
+              <span>Season 1 $TOOD Memecoin Rewards</span>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#f243ac] text-white">AIRDROP</span>
+            </div>
+            <div className="text-[12px] text-[#0d0e1180] mt-0.5">
+              Top 10 players on this leaderboard at season close will receive guaranteed $TOOD token allocations on Robinhood Chain!
+            </div>
+          </div>
+        </div>
+        <span className="mono text-[11px] font-bold text-[#f243ac] whitespace-nowrap px-3 py-1 rounded-lg bg-white border border-[#f243ac]/30">
+          Rank Up to Qualify
         </span>
       </div>
 
