@@ -287,7 +287,7 @@ export function subscribeToSaloon(onNewMessage) {
 /**
  * Save user stake activity to Supabase
  */
-export async function recordStakeActivity({ roundNumber, walletAddress, plotId, cell, tokenSymbol, ethAmount, usdgAmount }) {
+export async function recordStakeActivity({ roundNumber, walletAddress, plotId, cell, tokenSymbol, ethAmount, usdgAmount, txHash }) {
   if (!walletAddress) return;
 
   // Track user stake in profile stats
@@ -312,7 +312,7 @@ export async function recordStakeActivity({ roundNumber, walletAddress, plotId, 
         status: 'betting'
       }, { onConflict: 'round_number' });
 
-    // 3. Insert stake
+    // 3. Insert stake with real on-chain transaction hash
     const { error } = await supabase
       .from('stakes')
       .insert({
@@ -322,12 +322,86 @@ export async function recordStakeActivity({ roundNumber, walletAddress, plotId, 
         cell,
         token_symbol: tokenSymbol,
         eth_amount: ethAmount || 0,
-        usdg_amount: usdgAmount || 0
+        usdg_amount: usdgAmount || 0,
+        tx_hash: txHash || null
       });
 
     if (error) console.warn('Supabase stake record error:', error.message);
   } catch (err) {
     console.warn('Supabase record stake error:', err);
+  }
+}
+
+/**
+ * Record a winner claim in database
+ */
+export async function createWinnerClaim({ roundNumber, walletAddress, amountEth, amountUsdg }) {
+  if (!isSupabaseConfigured || !supabase || !walletAddress) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from('claims')
+      .insert({
+        round_number: roundNumber,
+        wallet_address: walletAddress.toLowerCase(),
+        amount_eth: amountEth || 0,
+        amount_usdg: amountUsdg || 0,
+        status: 'unclaimed'
+      })
+      .select()
+      .single();
+
+    if (error) console.warn('createWinnerClaim error:', error.message);
+    return data;
+  } catch (err) {
+    console.warn('Error in createWinnerClaim:', err);
+    return null;
+  }
+}
+
+/**
+ * Fetch pending unclaimed prizes for a user
+ */
+export async function fetchUserClaims(walletAddress) {
+  if (!isSupabaseConfigured || !supabase || !walletAddress) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('claims')
+      .select('*')
+      .eq('wallet_address', walletAddress.toLowerCase())
+      .eq('status', 'unclaimed')
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return data || [];
+  } catch (err) {
+    return [];
+  }
+}
+
+/**
+ * Request real on-chain payout transfer from Company Treasury Wallet
+ */
+export async function requestPayoutTransfer({ roundNumber, walletAddress }) {
+  try {
+    const res = await fetch('/api/claim-payout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roundNumber,
+        walletAddress
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Payout transfer failed');
+    }
+    return data;
+  } catch (err) {
+    console.error('requestPayoutTransfer error:', err);
+    throw err;
   }
 }
 

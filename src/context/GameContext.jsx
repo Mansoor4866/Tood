@@ -11,7 +11,8 @@ import {
   fetchActiveRound,
   fetchRoundStakes,
   subscribeToStakes,
-  subscribeToRounds
+  subscribeToRounds,
+  createWinnerClaim
 } from '../lib/supabase';
 import confetti from 'canvas-confetti';
 
@@ -154,15 +155,15 @@ export const GameProvider = ({ children }) => {
   }, []);
 
   // Stake user funds on a plot
-  const placeStake = (plotId, ethAmount, usdgAmount, walletAddress = null) => {
+  const placeStake = (plotId, ethAmount, usdgAmount, walletAddress = null, txHash = null) => {
     const targetPlot = plots.find(p => p.id === plotId);
 
     setPlots(prev => prev.map(p => {
       if (p.id === plotId) {
         return {
           ...p,
-          ethStake: +(p.ethStake + ethAmount).toFixed(2),
-          usdgStake: +(p.usdgStake + usdgAmount),
+          ethStake: +(p.ethStake + ethAmount).toFixed(4),
+          usdgStake: +(p.usdgStake + usdgAmount).toFixed(2),
           stakersCount: p.stakersCount + (userStakes[plotId] ? 0 : 1)
         };
       }
@@ -190,7 +191,8 @@ export const GameProvider = ({ children }) => {
         cell: targetPlot.cell,
         tokenSymbol: targetPlot.symbol,
         ethAmount,
-        usdgAmount
+        usdgAmount,
+        txHash
       });
     }
   };
@@ -242,9 +244,16 @@ export const GameProvider = ({ children }) => {
           if (userPayoutEth > 0) creditBalance(userPayoutEth, 'ETH');
           if (userPayoutUsdg > 0) creditBalance(userPayoutUsdg, 'USDG');
 
-          // Persist user win in Supabase profiles & localStorage
+          // Persist user win in Supabase profiles & create on-chain claim record
           const winnerAddr = fullAddress || account;
           if (winnerAddr) {
+            createWinnerClaim({
+              roundNumber,
+              walletAddress: winnerAddr,
+              amountEth: userPayoutEth,
+              amountUsdg: userPayoutUsdg
+            });
+
             updateUserGameStats({
               walletAddress: winnerAddr,
               deltaWonEth: userPayoutEth,

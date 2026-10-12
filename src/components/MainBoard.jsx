@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
-import { ChevronDown, Send, Sparkles, Radio } from 'lucide-react';
+import { ChevronDown, Send, Sparkles, Radio, Loader2 } from 'lucide-react';
 import { INITIAL_SALOON_CHATS } from '../data/mockData';
 import { fetchSaloonMessages, sendSaloonMessage, subscribeToSaloon } from '../lib/supabase';
 
 export const MainBoard = () => {
   const { plots, userStakes, selectedPlot, setSelectedPlot, highlightedPlotId, winningPlot, roundStatus, roundNumber, placeStake } = useGame();
-  const { isConnected, account, fullAddress, ethBalance, usdgBalance, deductBalance, setShowWalletModal } = useWallet();
+  const { isConnected, account, fullAddress, ethBalance, usdgBalance, deductBalance, setShowWalletModal, sendStakeTransaction } = useWallet();
   const { playClick } = useSound();
 
   // Selected plot for staking
@@ -18,6 +18,7 @@ export const MainBoard = () => {
   const [stakeToken, setStakeToken] = useState('ETH'); // 'ETH' | 'USDG'
   const [stakeAmount, setStakeAmount] = useState('0.02');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isStaking, setIsStaking] = useState(false);
   const [stakeSuccess, setStakeSuccess] = useState('');
   const [stakeError, setStakeError] = useState('');
 
@@ -70,7 +71,7 @@ export const MainBoard = () => {
     }
   };
 
-  const handlePlaceStake = () => {
+  const handlePlaceStake = async () => {
     playClick();
     if (!isConnected) {
       setShowWalletModal(true);
@@ -89,22 +90,40 @@ export const MainBoard = () => {
       return;
     }
 
-    const deducted = deductBalance(num, stakeToken);
-    if (!deducted) {
-      setStakeError('Transaction failed: Insufficient balance');
-      return;
-    }
-
-    const userAddr = fullAddress || account;
-    if (stakeToken === 'ETH') {
-      placeStake(activePlot.id, num, 0, userAddr);
-    } else {
-      placeStake(activePlot.id, 0, num, userAddr);
-    }
-
-    setStakeSuccess(`Staked ${num} ${stakeToken} on Plot ${activePlot.cell}`);
+    setIsStaking(true);
     setStakeError('');
-    setTimeout(() => setStakeSuccess(''), 3500);
+    setStakeSuccess('');
+
+    try {
+      let txHash = null;
+
+      // Real on-chain ETH transfer directly to Company Treasury Wallet!
+      if (stakeToken === 'ETH' && sendStakeTransaction) {
+        txHash = await sendStakeTransaction(num);
+      } else {
+        const deducted = deductBalance(num, stakeToken);
+        if (!deducted) throw new Error('Transaction failed: Insufficient balance');
+      }
+
+      const userAddr = fullAddress || account;
+      if (stakeToken === 'ETH') {
+        placeStake(activePlot.id, num, 0, userAddr, txHash);
+      } else {
+        placeStake(activePlot.id, 0, num, userAddr, txHash);
+      }
+
+      setStakeSuccess(`Staked ${num} ${stakeToken} on Plot ${activePlot.cell}${txHash ? ` (Tx: ${txHash.slice(0, 8)}...)` : ''}`);
+      setTimeout(() => setStakeSuccess(''), 5000);
+    } catch (err) {
+      console.warn('Stake on-chain error:', err);
+      if (err.code === 4001) {
+        setStakeError('Transaction cancelled in wallet.');
+      } else {
+        setStakeError(err.message || 'Transaction failed. Please try again.');
+      }
+    } finally {
+      setIsStaking(false);
+    }
   };
 
   return (
@@ -382,9 +401,17 @@ export const MainBoard = () => {
             {isConnected ? (
               <button
                 onClick={handlePlaceStake}
-                className="btn-pink w-full py-3.5 text-[15px] font-bold"
+                disabled={isStaking}
+                className="btn-pink w-full py-3.5 text-[15px] font-bold flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
               >
-                Stake Plot {activePlot.cell} (${activePlot.symbol})
+                {isStaking ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Confirm in Wallet...</span>
+                  </>
+                ) : (
+                  <span>Stake Plot {activePlot.cell} (${activePlot.symbol})</span>
+                )}
               </button>
             ) : (
               <button

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS public.stakes (
   is_winner BOOLEAN DEFAULT FALSE,
   payout_eth NUMERIC DEFAULT 0,
   payout_usdg NUMERIC DEFAULT 0,
+  tx_hash TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -61,11 +62,25 @@ CREATE TABLE IF NOT EXISTS public.saloon_messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Winner Claims Ledger (Tracks 90% Payouts from Company Treasury)
+CREATE TABLE IF NOT EXISTS public.claims (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  round_number BIGINT REFERENCES public.rounds(round_number) ON DELETE CASCADE,
+  wallet_address TEXT REFERENCES public.profiles(wallet_address) ON DELETE CASCADE,
+  amount_eth NUMERIC DEFAULT 0,
+  amount_usdg NUMERIC DEFAULT 0,
+  status TEXT DEFAULT 'unclaimed', -- 'unclaimed', 'processing', 'claimed'
+  tx_hash TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  claimed_at TIMESTAMPTZ
+);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stakes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.saloon_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.claims ENABLE ROW LEVEL SECURITY;
 
 -- Allow Public Read Access (Anon key can read game states and chat)
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
@@ -80,11 +95,15 @@ CREATE POLICY "Stakes are insertable/updatable" ON public.stakes FOR ALL USING (
 CREATE POLICY "Saloon messages are viewable by everyone" ON public.saloon_messages FOR SELECT USING (true);
 CREATE POLICY "Saloon messages can be posted by everyone" ON public.saloon_messages FOR INSERT WITH CHECK (true);
 
+CREATE POLICY "Claims are viewable by everyone" ON public.claims FOR SELECT USING (true);
+CREATE POLICY "Claims are insertable/updatable" ON public.claims FOR ALL USING (true);
+
 -- Enable Realtime Subscriptions for live updates
 ALTER PUBLICATION supabase_realtime ADD TABLE public.rounds;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.stakes;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.saloon_messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.claims;
 
 -- Pre-seed initial saloon chats if table is empty
 INSERT INTO public.saloon_messages (wallet_address, text, avatar_url, created_at)

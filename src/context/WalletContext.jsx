@@ -16,6 +16,8 @@ export const ROBINHOOD_CHAIN = {
   blockExplorerUrls: ['https://robinhoodchain.blockscout.com'],
 };
 
+export const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS || '0x4eb8aa028b43dd227a433f8bcc4c62e5212c8776';
+
 // Known popular Robinhood-supported wallet metadata
 export const POPULAR_WALLETS = [
   {
@@ -369,6 +371,35 @@ export const WalletProvider = ({ children }) => {
     };
   }, [activeProvider, fullAddress]);
 
+  // Send on-chain stake transfer directly to Company Treasury Wallet
+  const sendStakeTransaction = async (amountEth) => {
+    const p = activeProvider || window.ethereum;
+    if (!p || !fullAddress) throw new Error('Wallet not connected');
+
+    const num = Number(amountEth);
+    if (!num || num <= 0) throw new Error('Invalid stake amount');
+
+    // Convert ETH to Wei (hex format)
+    const weiAmount = BigInt(Math.floor(num * 1e18));
+    const hexValue = '0x' + weiAmount.toString(16);
+
+    const txHash = await p.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: fullAddress,
+        to: TREASURY_ADDRESS,
+        value: hexValue,
+      }],
+    });
+
+    // Refresh user balance after sending
+    setTimeout(() => {
+      fetchBalance(fullAddress, p);
+    }, 2500);
+
+    return txHash;
+  };
+
   return (
     <WalletContext.Provider
       value={{
@@ -391,6 +422,8 @@ export const WalletProvider = ({ children }) => {
         switchToRobinhoodChain,
         loadUserData,
         refreshBalance: (addr) => fetchBalance(addr || fullAddress),
+        sendStakeTransaction,
+        treasuryAddress: TREASURY_ADDRESS,
       }}
     >
       {children}

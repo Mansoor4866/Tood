@@ -1,13 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
+import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
-import { Trophy, ArrowRight, ExternalLink, Sparkles } from 'lucide-react';
+import { Trophy, ArrowRight, ExternalLink, Sparkles, CheckCircle2, Loader2 } from 'lucide-react';
+import { requestPayoutTransfer } from '../lib/supabase';
 
 export const DrawModal = () => {
   const { winnerDetails, winningPlot, roundStatus, resetRound } = useGame();
-  const { playClick } = useSound();
+  const { walletAddress } = useWallet();
+  const { playClick, playWin } = useSound();
+
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimTxHash, setClaimTxHash] = useState(null);
+  const [claimError, setClaimError] = useState(null);
 
   if (roundStatus !== 'settled' || !winnerDetails || !winningPlot) return null;
+
+  const handleClaimPayout = async () => {
+    if (!walletAddress) {
+      setClaimError('Please connect your wallet first.');
+      return;
+    }
+    playClick();
+    setIsClaiming(true);
+    setClaimError(null);
+
+    try {
+      const res = await requestPayoutTransfer({
+        roundNumber: winnerDetails.round,
+        walletAddress
+      });
+      if (res?.txHash) {
+        setClaimTxHash(res.txHash);
+        if (playWin) playWin();
+      }
+    } catch (err) {
+      setClaimError(err.message || 'Payout failed. Treasury wallet may be funding or pending setup.');
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fadeIn">
@@ -46,9 +78,48 @@ export const DrawModal = () => {
               +{winnerDetails.userPayoutEth > 0 ? `${winnerDetails.userPayoutEth} ETH` : ''}
               {winnerDetails.userPayoutUsdg > 0 ? ` +${winnerDetails.userPayoutUsdg} USDG` : ''}
             </div>
-            <div className="mono text-[11px] text-[#008638] font-semibold mt-0.5">
-              Credited directly to your wallet balance
-            </div>
+
+            {claimTxHash ? (
+              <div className="mt-3 p-3 rounded-xl bg-white border border-[#008638]/40 text-left">
+                <div className="flex items-center gap-1.5 text-[#008638] text-[12px] font-bold">
+                  <CheckCircle2 size={15} /> Payout Transferred On-Chain!
+                </div>
+                <a
+                  href={`https://robinhoodchain.blockscout.com/tx/${claimTxHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 text-[11px] font-mono text-[#0053ff] hover:underline flex items-center gap-1 break-all"
+                >
+                  <span>Tx: {claimTxHash.slice(0, 10)}...{claimTxHash.slice(-8)}</span>
+                  <ExternalLink size={10} className="shrink-0" />
+                </a>
+              </div>
+            ) : (
+              <div className="mt-3">
+                <button
+                  onClick={handleClaimPayout}
+                  disabled={isClaiming}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#008638] hover:bg-[#00702e] text-white font-bold text-[13px] flex items-center justify-center gap-2 shadow-sm transition active:scale-95 disabled:opacity-50"
+                >
+                  {isClaiming ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Sending On-Chain Payout...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={14} />
+                      <span>Claim {winnerDetails.userPayoutEth} ETH from Treasury</span>
+                    </>
+                  )}
+                </button>
+                {claimError && (
+                  <p className="text-[11px] text-red-500 font-mono mt-1.5 text-center">
+                    {claimError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="my-5 p-4 rounded-2xl bg-[#f8f8fa] border border-[#e6e6eb]">
