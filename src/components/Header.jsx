@@ -67,10 +67,11 @@ export const Header = ({ activeTab, setActiveTab }) => {
 
           {/* Twitter / X circular button */}
           <a
-            href="https://x.com/tood_game"
+            href="https://x.com/ToodProtocol_"
             target="_blank"
             rel="noreferrer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-[#e5e7eb] text-[#0d0e11] hover:bg-gray-50 transition-colors"
+            title="@ToodProtocol_ on X"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-[#e5e7eb] text-[#0d0e11] hover:bg-gray-50 hover:text-[#f243ac] transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
