@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
 import { Trophy, ArrowRight, ExternalLink, Sparkles, CheckCircle2, Loader2 } from 'lucide-react';
-import { requestPayoutTransfer } from '../lib/supabase';
+import { requestPayoutTransfer, supabase } from '../lib/supabase';
 
 export const DrawModal = () => {
   const { winnerDetails, winningPlot, roundStatus, resetRound } = useGame();
@@ -13,6 +13,26 @@ export const DrawModal = () => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimTxHash, setClaimTxHash] = useState(null);
   const [claimError, setClaimError] = useState(null);
+
+  // Check if winnings for this round are already claimed in database
+  useEffect(() => {
+    let isMounted = true;
+    if (winnerDetails?.round && walletAddress && supabase) {
+      supabase
+        .from('claims')
+        .select('*')
+        .eq('round_number', winnerDetails.round)
+        .eq('wallet_address', walletAddress.toLowerCase())
+        .maybeSingle()
+        .then(({ data }) => {
+          if (isMounted && data && data.status === 'claimed' && data.tx_hash) {
+            setClaimTxHash(data.tx_hash);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => { isMounted = false; };
+  }, [winnerDetails?.round, walletAddress]);
 
   if (roundStatus !== 'settled' || !winnerDetails || !winningPlot) return null;
 
