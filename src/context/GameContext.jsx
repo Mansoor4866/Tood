@@ -201,9 +201,17 @@ export const GameProvider = ({ children }) => {
   const triggerDraw = () => {
     setRoundStatus('drawing');
     
-    // Pick winning plot
-    const winningIdx = Math.floor(Math.random() * 16);
-    const targetPlot = plots[winningIdx];
+    // Pick winning plot EXCLUSIVELY from plots where users have actually staked!
+    // Any plot with 0 stakes is excluded so someone from the active participants is guaranteed to win.
+    const activePlots = plots.filter(
+      p => (Number(p.ethStake) > 0 || Number(p.usdgStake) > 0 || Number(p.stakersCount) > 0)
+    );
+
+    const targetPlot = activePlots.length > 0
+      ? activePlots[Math.floor(Math.random() * activePlots.length)]
+      : plots[Math.floor(Math.random() * 16)];
+    
+    const winningIdx = targetPlot.id;
     
     let currentIdx = 0;
     let speed = 60;
