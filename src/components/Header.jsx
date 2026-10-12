@@ -36,7 +36,8 @@ export const Header = ({ activeTab, setActiveTab }) => {
               { id: 'grid', label: 'Grid' },
               { id: 'history', label: 'Rounds' },
               { id: 'standings', label: 'Leaderboard' },
-              { id: 'tokens', label: 'Season' }
+              { id: 'tokens', label: 'Season' },
+              { id: 'rules', label: 'How to Play' }
             ].map(tab => (
               <button
                 key={tab.id}
@@ -106,7 +107,8 @@ export const Header = ({ activeTab, setActiveTab }) => {
           { id: 'grid', label: 'Grid' },
           { id: 'history', label: 'Rounds' },
           { id: 'standings', label: 'Leaderboard' },
-          { id: 'tokens', label: 'Season' }
+          { id: 'tokens', label: 'Season' },
+          { id: 'rules', label: 'How to Play' }
         ].map(tab => (
           <button
             key={tab.id}

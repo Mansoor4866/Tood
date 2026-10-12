@@ -11,12 +11,13 @@ import { WhereThePotGoesAndHouseRules } from './components/WhereThePotGoes';
 import { HistoryLog } from './components/HistoryLog';
 import { Standings } from './components/Standings';
 import { TokenRoster } from './components/TokenRoster';
+import { HowToPlayView } from './components/HowToPlayView';
 import { DrawModal } from './components/DrawModal';
 import { WalletModal } from './components/WalletModal';
 import { Footer } from './components/Footer';
 
 function MainContent() {
-  const [activeTab, setActiveTab] = useState('grid'); // 'grid' | 'history' | 'standings' | 'tokens'
+  const [activeTab, setActiveTab] = useState('grid'); // 'grid' | 'history' | 'standings' | 'tokens' | 'rules'
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f4f4] text-[#0d0e11] relative selection:bg-[#f243ac] selection:text-white">
@@ -56,6 +57,12 @@ function MainContent() {
         {activeTab === 'tokens' && (
           <div className="animate-fadeIn">
             <TokenRoster />
+          </div>
+        )}
+
+        {activeTab === 'rules' && (
+          <div className="animate-fadeIn">
+            <HowToPlayView onGoToGrid={() => setActiveTab('grid')} />
           </div>
         )}
       </main>
