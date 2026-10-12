@@ -11,8 +11,8 @@ export const MainBoard = () => {
   const { isConnected, account, fullAddress, ethBalance, usdgBalance, deductBalance, setShowWalletModal, sendStakeTransaction } = useWallet();
   const { playClick } = useSound();
 
-  // Selected plot for staking
-  const activePlot = selectedPlot || plots[0];
+  // Selected plot for staking (safe fallback)
+  const activePlot = selectedPlot || (plots && plots[0]) || { id: 0, cell: 'A1', symbol: 'PONS', name: 'Pons', ethStake: 0, usdgStake: 0 };
 
   // Staking Form State
   const [stakeToken, setStakeToken] = useState('ETH'); // 'ETH' | 'USDG'
@@ -270,9 +270,9 @@ export const MainBoard = () => {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 bg-[#f6f6f8] px-3 py-1 rounded-full border border-[#e6e6eb]">
                 <span className="h-4 w-4 rounded-full bg-white inline-block overflow-hidden p-0.5 border border-gray-200">
-                  <img src={plots[0].avatar} alt="" className="h-full w-full object-cover rounded-full" />
+                  <img src={plots?.[0]?.avatar || ''} alt="" className="h-full w-full object-cover rounded-full" />
                 </span>
-                <span className="font-bold text-[#0d0e11]">${plots[0].symbol}</span>
+                <span className="font-bold text-[#0d0e11]">${plots?.[0]?.symbol || 'PEPE'}</span>
                 <span className="text-[#008638] font-bold">#1</span>
               </div>
             </div>

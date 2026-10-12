@@ -18,13 +18,13 @@ export const LiveActivityTicker = () => {
 
   // If recent real history exists, prepend it
   const displayItems = [
-    ...(history && history.length > 0
+    ...(history && Array.isArray(history) && history.length > 0
       ? history.slice(0, 3).map(h => ({
           type: 'win',
           icon: Trophy,
           color: '#008638',
-          text: `Plot ${h.cell || 'WIN'} won +${h.potEth || h.potUsdg || '0.5'} ${h.potEth ? 'ETH' : 'USDG'}`,
-          sub: `Round #${h.round || roundNumber}`
+          text: `Plot ${h?.cell || 'WIN'} won +${h?.potEth || h?.potUsdg || '0.5'} ${h?.potEth ? 'ETH' : 'USDG'}`,
+          sub: `Round #${h?.round || roundNumber || 1}`
         }))
       : []),
     ...TICKER_ITEMS
@@ -44,12 +44,12 @@ export const LiveActivityTicker = () => {
           <div className="animate-marquee flex items-center gap-8 pl-4">
             {/* First Set */}
             {displayItems.map((item, idx) => {
-              const IconComp = item.icon;
+              const IconComp = item.icon || Trophy;
               return (
                 <div key={`a-${idx}`} className="flex items-center gap-2 text-[12px] mono shrink-0 text-[#0d0e11]">
                   <div 
                     className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${item.color}18`, color: item.color }}
+                    style={{ backgroundColor: `${item.color || '#008638'}18`, color: item.color || '#008638' }}
                   >
                     <IconComp size={11} />
                   </div>
@@ -64,12 +64,12 @@ export const LiveActivityTicker = () => {
 
             {/* Second Duplicate Set for Continuous Infinite Loop */}
             {displayItems.map((item, idx) => {
-              const IconComp = item.icon;
+              const IconComp = item.icon || Trophy;
               return (
                 <div key={`b-${idx}`} className="flex items-center gap-2 text-[12px] mono shrink-0 text-[#0d0e11]">
                   <div 
                     className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: `${item.color}18`, color: item.color }}
+                    style={{ backgroundColor: `${item.color || '#008638'}18`, color: item.color || '#008638' }}
                   >
                     <IconComp size={11} />
                   </div>
