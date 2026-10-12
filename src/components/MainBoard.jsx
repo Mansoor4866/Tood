@@ -229,7 +229,7 @@ export const MainBoard = () => {
 
                   {/* Central Circular Token Avatar */}
                   <div className="flex items-center justify-center my-auto z-10">
-                    <div className="h-12 w-12 sm:h-15 sm:w-15 rounded-full overflow-hidden bg-white border border-[#e5e7eb] p-1 shadow-sm flex items-center justify-center transform group-hover:scale-105 transition-transform">
+                    <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-full overflow-hidden bg-white border border-[#e5e7eb] p-1 shadow-xs flex items-center justify-center transform group-hover:scale-105 transition-transform">
                       <img
                         src={plot.avatar}
                         alt={plot.name}
@@ -286,28 +286,34 @@ export const MainBoard = () => {
           {/* Card 1: Stake a claim */}
           <div className="facto-card p-6 sm:p-7">
             <div className="flex items-center justify-between pb-4 border-b border-[#f0f0f3]">
-              <div className="flex items-center gap-3">
-                <div className="h-7 w-auto px-2 py-0.5 rounded-lg bg-white border border-[#e6e6eb] shadow-sm flex items-center">
-                  <img src="/assets/TOOD LOGO-01.jpg" alt="TOOD Official" className="h-4.5 w-auto object-contain" />
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-[#fff0f8] border border-[#f243ac]/25 text-[#f243ac] flex items-center justify-center font-bold shadow-xs shrink-0">
+                  <Zap size={18} className="fill-[#f243ac]" />
                 </div>
-                <h3 className="display text-[21px] font-bold text-[#0d0e11] tracking-tight">
-                  Stake a claim
-                </h3>
+                <div>
+                  <h3 className="text-[20px] font-bold text-[#0d0e11] tracking-tight leading-none">
+                    Stake a claim
+                  </h3>
+                  <p className="text-[11px] font-mono text-[#0d0e1180] mt-1">Pick plot · Win 90% pot</p>
+                </div>
               </div>
-              <span className="mono text-[12px] font-semibold px-2.5 py-0.5 rounded-full bg-[#f4f4f6] text-[#0d0e1180] border border-[#e6e6eb]">
+              <span className="mono text-[11px] font-bold px-3 py-1 rounded-full bg-[#f4f4f6] text-[#0d0e11] border border-[#e6e6eb] shrink-0">
                 Round #{roundNumber}
               </span>
             </div>
 
             {/* Info notice */}
-            <div className="my-4 p-3.5 rounded-xl bg-[#f8f8fa] border border-[#e6e6eb] flex items-start gap-2.5 text-[13px] text-[#0d0e1180]">
-              <div className="h-4 w-4 rounded-full bg-[#f243ac]/10 text-[#f243ac] flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
-                !
+            <div className="my-4 p-3 rounded-xl bg-gradient-to-r from-[#fff5fa] via-[#fdf6fa] to-[#f8f8fa] border border-[#f243ac]/20 flex items-center justify-between text-[12px] text-[#0d0e11]">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="h-2 w-2 rounded-full bg-[#f243ac] animate-pulse shrink-0" />
+                <span className="font-bold text-[#f243ac] shrink-0">Plot {activePlot.cell}</span>
+                <span className="text-[#0d0e114d]">·</span>
+                <span className="text-[#0d0e11cc] font-medium truncate">
+                  {roundStatus === 'betting' ? `Staking with $${activePlot.symbol}` : 'Rolls to next round'}
+                </span>
               </div>
-              <span className="leading-snug">
-                {roundStatus === 'betting'
-                  ? `Staking on Plot ${activePlot.cell} ($${activePlot.symbol}). Winner takes 90% of total pot.`
-                  : 'Round in progress. New stakes will roll to next round.'}
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white border border-[#f243ac]/30 text-[#f243ac] shrink-0 ml-2 shadow-xs">
+                90% Pot
               </span>
             </div>
 
@@ -320,14 +326,23 @@ export const MainBoard = () => {
 
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#f8f8fa] border border-[#e6e6eb] text-[#0d0e11] hover:border-[#f243ac] transition-all cursor-pointer shadow-sm"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-white border border-[#e6e6eb] text-[#0d0e11] hover:border-[#f243ac] hover:shadow-xs transition-all cursor-pointer shadow-inner"
               >
                 <div className="flex items-center gap-2.5">
-                  <img src={activePlot.avatar} alt="" className="h-6 w-6 rounded-full bg-white p-0.5 border border-gray-200" />
-                  <span className="font-bold text-[#0d0e11]">${activePlot.symbol}</span>
-                  <span className="text-[#0d0e1180] text-[13px]">{activePlot.name} (Plot {activePlot.cell})</span>
+                  <div className="h-7 w-7 rounded-full overflow-hidden bg-[#f4f4f6] border border-gray-200 p-0.5 shrink-0">
+                    <img src={activePlot.avatar} alt="" className="h-full w-full object-cover rounded-full" />
+                  </div>
+                  <div className="text-left leading-tight">
+                    <span className="font-bold text-[#0d0e11] text-[14px]">${activePlot.symbol}</span>
+                    <span className="text-[#0d0e1180] text-[12px] block">{activePlot.name} · Plot {activePlot.cell}</span>
+                  </div>
                 </div>
-                <ChevronDown size={16} className={`text-[#0d0e1180] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-semibold text-[#0d0e1180] bg-[#f4f4f6] px-2 py-0.5 rounded-md">
+                    {activePlot.ethStake > 0 ? `${activePlot.ethStake} ETH` : '0 ETH'}
+                  </span>
+                  <ChevronDown size={16} className={`text-[#0d0e1180] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </div>
               </button>
 
               {/* Dropdown Menu */}
@@ -421,7 +436,7 @@ export const MainBoard = () => {
                   <button
                     key={b.label}
                     onClick={() => { playClick(); setStakeAmount(b.val); setStakeError(''); }}
-                    className="py-1.5 rounded-xl bg-[#f8f8fa] border border-[#e6e6eb] mono text-[12px] font-semibold text-[#0d0e11] hover:bg-[#eaeaee] transition-colors cursor-pointer"
+                    className="py-2 rounded-xl bg-white border border-[#e6e6eb] mono text-[12px] font-bold text-[#0d0e11] hover:bg-[#fff0f8] hover:border-[#f243ac]/40 hover:text-[#f243ac] transition-all cursor-pointer shadow-xs active:scale-95"
                   >
                     {b.label}
                   </button>

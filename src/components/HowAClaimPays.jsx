@@ -19,10 +19,8 @@ export const HowAClaimPays = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 self-start md:self-auto">
-          <div className="h-7 w-auto px-2 py-0.5 rounded-lg bg-white border border-[#e6e6eb] shadow-sm flex items-center">
-            <img src="/assets/TOOD LOGO-01.jpg" alt="TOOD" className="h-4 w-auto object-contain" />
-          </div>
-          <span className="mono text-[12px] font-semibold px-3 py-1 rounded-full bg-white border border-[#e6e6eb] text-[#0d0e1180] shadow-sm">
+          <span className="mono text-[12px] font-semibold px-3.5 py-1.5 rounded-full bg-white border border-[#e6e6eb] text-[#0d0e11] shadow-xs flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-[#f243ac] animate-pulse" />
             Protocol Rules
           </span>
         </div>
