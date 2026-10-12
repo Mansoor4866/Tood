@@ -28,7 +28,8 @@ export const DrawModal = () => {
     try {
       const res = await requestPayoutTransfer({
         roundNumber: winnerDetails.round,
-        walletAddress
+        walletAddress,
+        amountEth: winnerDetails.userPayoutEth
       });
       if (res?.txHash) {
         setClaimTxHash(res.txHash);

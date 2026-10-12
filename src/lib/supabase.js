@@ -383,14 +383,15 @@ export async function fetchUserClaims(walletAddress) {
 /**
  * Request real on-chain payout transfer from Company Treasury Wallet
  */
-export async function requestPayoutTransfer({ roundNumber, walletAddress }) {
+export async function requestPayoutTransfer({ roundNumber, walletAddress, amountEth }) {
   try {
     const res = await fetch('/api/claim-payout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         roundNumber,
-        walletAddress
+        walletAddress,
+        amountEth
       })
     });
 
