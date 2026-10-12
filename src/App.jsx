@@ -4,6 +4,7 @@ import { WalletProvider } from './context/WalletContext';
 import { SoundProvider } from './context/SoundContext';
 
 import { Header } from './components/Header';
+import { LiveActivityTicker } from './components/LiveActivityTicker';
 import { Hero } from './components/Hero';
 import { MainBoard } from './components/MainBoard';
 import { HowAClaimPays } from './components/HowAClaimPays';
@@ -23,6 +24,9 @@ function MainContent() {
     <div className="min-h-screen flex flex-col bg-[#f4f4f4] text-[#0d0e11] relative selection:bg-[#f243ac] selection:text-white">
       {/* Facto Style Header */}
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* Realtime Live Activity & Casino Floor Wins Marquee */}
+      <LiveActivityTicker />
 
       {/* Main Page Content */}
       <main className="flex-1">

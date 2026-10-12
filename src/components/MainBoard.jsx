@@ -7,7 +7,7 @@ import { INITIAL_SALOON_CHATS } from '../data/mockData';
 import { fetchSaloonMessages, sendSaloonMessage, subscribeToSaloon } from '../lib/supabase';
 
 export const MainBoard = () => {
-  const { plots, userStakes, selectedPlot, setSelectedPlot, highlightedPlotId, winningPlot, roundStatus, roundNumber, placeStake } = useGame();
+  const { plots, userStakes, selectedPlot, setSelectedPlot, highlightedPlotId, winningPlot, roundStatus, roundNumber, placeStake, totalEthPot, totalUsdgPot } = useGame();
   const { isConnected, account, fullAddress, ethBalance, usdgBalance, deductBalance, setShowWalletModal, sendStakeTransaction } = useWallet();
   const { playClick } = useSound();
 
@@ -238,10 +238,26 @@ export const MainBoard = () => {
                     </div>
                   </div>
 
-                  {/* Stake Status Indicator at bottom */}
+                  {/* Stake Status Indicator & Dynamic Multiplier at bottom */}
                   <div className="pt-1 flex items-center justify-between text-[11px] mono text-[#0d0e11] z-10">
-                    <span className="font-bold text-[#0d0e11]">{plot.ethStake > 0 ? `${plot.ethStake} ETH` : '0 ETH'}</span>
-                    {plot.usdgStake > 0 && <span className="text-[10px] text-[#0d0e1180]">{plot.usdgStake}U</span>}
+                    <div className="flex items-center gap-1 font-bold">
+                      <span>{plot.ethStake > 0 ? `${plot.ethStake} ETH` : '0 ETH'}</span>
+                      {plot.usdgStake > 0 && <span className="text-[10px] text-[#0d0e1180] font-normal">({plot.usdgStake}U)</span>}
+                    </div>
+
+                    {/* Dynamic Odds Multiplier Badge */}
+                    <span 
+                      title="Estimated payout multiplier if this plot wins"
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                        plot.ethStake > 0
+                          ? 'bg-[#fff0f8] text-[#f243ac] border border-[#f243ac]/25 shadow-xs'
+                          : 'bg-[#e8f7ee] text-[#008638] border border-[#008638]/25'
+                      }`}
+                    >
+                      {plot.ethStake > 0
+                        ? `${Math.max(1.1, ((totalEthPot > 0 ? totalEthPot * 0.9 : 0.9) / plot.ethStake)).toFixed(1)}x`
+                        : '10x+'}
+                    </span>
                   </div>
                 </div>
               );
@@ -412,6 +428,44 @@ export const MainBoard = () => {
                 ))}
               </div>
             </div>
+
+            {/* Dynamic Estimated Return & Multiplier Preview */}
+            {(() => {
+              const currentPlotStake = (stakeToken === 'ETH' ? (activePlot.ethStake || 0) : (activePlot.usdgStake || 0));
+              const userVal = parseFloat(stakeAmount) || 0;
+              const currentPot = (stakeToken === 'ETH' ? (totalEthPot || 0) : (totalUsdgPot || 0));
+              const projectedPot = currentPot + userVal;
+              const totalPlotStakeAfter = currentPlotStake + userVal;
+              const userShare = totalPlotStakeAfter > 0 ? (userVal / totalPlotStakeAfter) : 1;
+              const netPayout = projectedPot * 0.9 * userShare;
+              const multiplier = userVal > 0 
+                ? (netPayout / userVal).toFixed(1) 
+                : (currentPlotStake > 0 ? Math.max(1.1, (currentPot * 0.9) / currentPlotStake).toFixed(1) : '10.0');
+
+              return (
+                <div className="mb-4 p-3 rounded-xl bg-[#fcfcfe] border border-[#e6e6eb] flex items-center justify-between text-[12px] mono shadow-xs">
+                  <div>
+                    <span className="text-[10px] text-[#0d0e1180] font-bold block uppercase tracking-wider">
+                      EST. RETURN (90% POT)
+                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[15px] font-bold text-[#008638]">
+                        +{userVal > 0 ? (stakeToken === 'ETH' ? netPayout.toFixed(4) : netPayout.toFixed(1)) : (stakeToken === 'ETH' ? (currentPot * 0.9).toFixed(4) : (currentPot * 0.9).toFixed(0))} {stakeToken}
+                      </span>
+                      <span className="text-[10px] font-bold text-[#f243ac] bg-[#f243ac]/10 px-1.5 py-0.5 rounded-full border border-[#f243ac]/20">
+                        {multiplier}x
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-[#0d0e1180] font-medium block">Your Plot Share</span>
+                    <span className="text-[13px] font-bold text-[#0d0e11]">
+                      {userVal > 0 ? `${(userShare * 100).toFixed(0)}%` : '0%'}
+                    </span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Error / Success Feedback */}
             {(stakeError || (parseFloat(stakeAmount) > 0 && parseFloat(stakeAmount) < (stakeToken === 'ETH' ? 0.0005 : 1))) && (
