@@ -41,7 +41,7 @@ export const Standings = () => {
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#f243ac] text-white">AIRDROP</span>
             </div>
             <div className="text-[12px] text-[#0d0e1180] mt-0.5">
-              Top 10 players on this leaderboard at season close will receive guaranteed $TOOD token allocations on Robinhood Chain!
+              Top 1,000 players on this leaderboard at season close will receive guaranteed $TOOD token allocations on Robinhood Chain!
             </div>
           </div>
         </div>
