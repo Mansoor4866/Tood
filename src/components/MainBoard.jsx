@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../context/GameContext';
 import { useWallet } from '../context/WalletContext';
 import { useSound } from '../context/SoundContext';
-import { ChevronDown, Send, Sparkles, Radio, Loader2 } from 'lucide-react';
+import { ChevronDown, Send, Sparkles, Radio, Loader2, Zap } from 'lucide-react';
 import { INITIAL_SALOON_CHATS } from '../data/mockData';
 import { fetchSaloonMessages, sendSaloonMessage, subscribeToSaloon } from '../lib/supabase';
 
